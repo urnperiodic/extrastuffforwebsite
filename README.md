@@ -1,1 +1,633 @@
-# ai
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>granddia AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #05050a;
+      --surface: #0d0d18;
+      --surface2: #13131f;
+      --border: rgba(255,255,255,0.06);
+      --accent: #e8ff47;
+      --accent2: #ff6b6b;
+      --text: #ece8f0;
+      --muted: #55556a;
+      --user-bubble: #1a1a2e;
+      --ai-bubble: #0f1a0f;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
+
+    /* scanline texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.012) 2px,
+        rgba(255,255,255,0.012) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* corner glow */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,255,71,0.06) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0,0); }
+      to   { transform: translate(40px, -40px); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5,5,10,0.9);
+      backdrop-filter: blur(16px);
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .wordmark-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .wordmark-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      border: 1px solid var(--accent);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .model-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .model-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(232,255,71,0.4); }
+      50% { opacity: 0.5; box-shadow: 0 0 0 4px rgba(232,255,71,0); }
+    }
+
+    /* ── MESSAGES ── */
+    #messages {
+      overflow-y: auto;
+      padding: 28px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #messages::-webkit-scrollbar { width: 3px; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* welcome screen */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 14px;
+      padding: 60px 20px;
+      text-align: center;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-icon {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    .welcome h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
+    .welcome p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      max-width: 300px;
+      line-height: 1.6;
+    }
+
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .chip {
+      font-size: 0.78rem;
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      background: rgba(232,255,71,0.05);
+    }
+
+    /* message rows */
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: rise 0.2s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; }
+    }
+
+    .msg-row.user { align-items: flex-end; }
+    .msg-row.ai   { align-items: flex-start; }
+
+    .msg-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 0 4px;
+    }
+
+    .msg-row.user .msg-label { color: rgba(232,255,71,0.5); }
+
+    .bubble {
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      max-width: 80%;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .msg-row.user .bubble {
+      background: var(--user-bubble);
+      border: 1px solid rgba(232,255,71,0.12);
+      border-radius: 16px 4px 16px 16px;
+      color: var(--text);
+    }
+
+    .msg-row.ai .bubble {
+      background: var(--ai-bubble);
+      border: 1px solid rgba(100,255,100,0.08);
+      border-radius: 4px 16px 16px 16px;
+      color: var(--text);
+    }
+
+    /* typing indicator */
+    .typing-dots {
+      display: flex;
+      gap: 5px;
+      padding: 14px 18px;
+      background: var(--ai-bubble);
+      border: 1px solid rgba(100,255,100,0.08);
+      border-radius: 4px 16px 16px 16px;
+      width: fit-content;
+    }
+
+    .typing-dots span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* error */
+    .error-bubble {
+      font-size: 0.82rem;
+      color: var(--accent2);
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      max-width: 80%;
+    }
+
+    /* ── INPUT BAR ── */
+    #input-bar {
+      padding: 14px 24px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(5,5,10,0.95);
+      backdrop-filter: blur(16px);
+    }
+
+    .compose {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 8px 8px 16px;
+      transition: border-color 0.2s;
+    }
+
+    .compose:focus-within {
+      border-color: rgba(232,255,71,0.3);
+    }
+
+    #msg-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.92rem;
+      outline: none;
+      resize: none;
+      max-height: 120px;
+      line-height: 1.5;
+      padding: 6px 0;
+    }
+
+    #msg-input::placeholder { color: var(--muted); }
+
+    #send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s, opacity 0.2s;
+    }
+
+    #send-btn:hover { transform: scale(1.06); }
+    #send-btn:active { transform: scale(0.94); }
+    #send-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
+
+    #send-btn svg {
+      width: 17px; height: 17px;
+      fill: #05050a;
+    }
+
+    .input-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding: 0 4px;
+    }
+
+    .input-footer span {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .clear-btn {
+      font-size: 0.68rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .clear-btn:hover { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="wordmark">
+      <span class="wordmark-main">granddia</span>
+      <span class="wordmark-tag">AI</span>
+    </div>
+    <div class="model-badge">
+      <span class="model-dot"></span>
+      <span>gemini-2.5-flash</span>
+    </div>
+  </header>
+
+  <div id="messages">
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">⚡</div>
+      <h2>What can I help with?</h2>
+      <p>Ask me anything — I'm powered by Gemini AI and ready to go.</p>
+      <div class="suggestion-chips">
+        <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+        <div class="chip" onclick="useChip(this)">Write me a poem</div>
+        <div class="chip" onclick="useChip(this)">Help me brainstorm ideas</div>
+        <div class="chip" onclick="useChip(this)">Debug my code</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="input-bar">
+    <div class="compose">
+      <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
+      <button id="send-btn" aria-label="Send">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="input-footer">
+      <span>Enter to send · Shift+Enter for new line</span>
+      <button class="clear-btn" onclick="clearChat()">clear chat</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ════════════════════════════════════════════════════
+  // GEMINI API KEY
+  // ════════════════════════════════════════════════════
+  const API_KEY = "AIzaSyB4kECM_k-EcEC5ntnyxw_me1ij5Dd4jGQ";
+
+  // Gemini model
+  const MODEL = "gemini-2.5-flash";
+
+  // System prompt
+  const SYSTEM_PROMPT =
+    "You are a helpful, sharp, and concise AI assistant on the granddia website. Keep responses clear and direct. Use markdown sparingly.";
+
+  let history = [];
+  let isLoading = false;
+
+  const messagesEl = document.getElementById('messages');
+  const msgInput   = document.getElementById('msg-input');
+  const sendBtn    = document.getElementById('send-btn');
+
+  function autoResize() {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+  }
+
+  msgInput.addEventListener('input', autoResize);
+
+  msgInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  function useChip(el) {
+    msgInput.value = el.textContent;
+    autoResize();
+    sendMessage();
+  }
+
+  function removeWelcome() {
+    const w = document.getElementById('welcome');
+    if (w) w.remove();
+  }
+
+  function appendRow(role, text) {
+    removeWelcome();
+
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+
+    row.innerHTML = `
+      <div class="msg-label">${role === 'user' ? 'you' : 'granddia AI'}</div>
+      <div class="bubble">${escapeHtml(text)}</div>
+    `;
+
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    return row;
+  }
+
+  function appendTyping() {
+    removeWelcome();
+
+    const row = document.createElement('div');
+    row.className = 'msg-row ai';
+    row.id = 'typing-row';
+
+    row.innerHTML = `
+      <div class="msg-label">granddia AI</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    `;
+
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-row');
+    if (t) t.remove();
+  }
+
+  function appendError(msg) {
+    const div = document.createElement('div');
+    div.className = 'error-bubble';
+    div.textContent = '⚠ ' + msg;
+
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+
+    appendRow('user', text);
+
+    history.push({
+      role: "user",
+      parts: [{ text }]
+    });
+
+    appendTyping();
+
+    try {
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: SYSTEM_PROMPT }]
+            },
+
+            contents: history,
+
+            generationConfig: {
+              temperature: 0.8,
+              topP: 0.95,
+              topK: 40,
+              maxOutputTokens: 1024
+            }
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+
+        throw new Error(
+          data.error?.message || `HTTP ${response.status}`
+        );
+      }
+
+      const reply =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "(no response)";
+
+      history.push({
+        role: "model",
+        parts: [{ text: reply }]
+      });
+
+      removeTyping();
+      appendRow('ai', reply);
+
+    } catch (err) {
+
+      console.error(err);
+
+      removeTyping();
+
+      appendError(
+        err.message || "Something went wrong."
+      );
+
+    } finally {
+
+      isLoading = false;
+      sendBtn.disabled = false;
+      msgInput.focus();
+    }
+  }
+
+  function clearChat() {
+
+    history = [];
+
+    messagesEl.innerHTML = `
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">⚡</div>
+        <h2>What can I help with?</h2>
+        <p>Ask me anything — I'm powered by Gemini AI and ready to go.</p>
+
+        <div class="suggestion-chips">
+          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+          <div class="chip" onclick="useChip(this)">Write me a poem</div>
+          <div class="chip" onclick="useChip(this)">Help me brainstorm ideas</div>
+          <div class="chip" onclick="useChip(this)">Debug my code</div>
+        </div>
+      </div>
+    `;
+  }
+</script>
