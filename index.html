@@ -499,7 +499,7 @@
 <div class="app">
   <header>
     <div class="wordmark">
-      <span class="wordmark-main">granddia</span>
+      <span class="wordmark-main">Gemini</span>
       <span class="wordmark-tag">AI</span>
     </div>
     <div class="model-badge">
@@ -510,13 +510,13 @@
 
   <div id="messages">
     <div class="welcome" id="welcome">
-      <div class="welcome-icon">⚡</div>
+      <div class="welcome-icon">🤖</div>
       <h2>What can I help with?</h2>
-      <p>Ask me anything — I'm powered by Gemini AI and ready to go. You can paste or attach images too!</p>
+      <p>Made by TM, you may paste images too.</p>
       <div class="suggestion-chips">
         <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
         <div class="chip" onclick="useChip(this)">Write me a poem</div>
-        <div class="chip" onclick="useChip(this)">Help me brainstorm ideas</div>
+        <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
         <div class="chip" onclick="useChip(this)">Debug my code</div>
       </div>
     </div>
@@ -554,7 +554,7 @@
   const MODEL = "gemini-2.5-flash";
 
   const SYSTEM_PROMPT =
-    "You are a helpful, sharp, and concise AI assistant on the granddia website. Keep responses clear and direct. Use markdown sparingly.";
+    "You are an AI to help students do their work, answer questions, and to be smart. Take your time when the question is complex. Answer all their questions.";
 
   let history = [];
   let isLoading = false;
@@ -861,14 +861,14 @@
 
     messagesEl.innerHTML = `
       <div class="welcome" id="welcome">
-        <div class="welcome-icon">⚡</div>
+        <div class="welcome-icon">🤖</div>
         <h2>What can I help with?</h2>
-        <p>Ask me anything — I'm powered by Gemini AI and ready to go. You can paste or attach images too!</p>
+        <p> Made by TM, you may paste images too. !</p>
 
         <div class="suggestion-chips">
           <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
           <div class="chip" onclick="useChip(this)">Write me a poem</div>
-          <div class="chip" onclick="useChip(this)">Help me brainstorm ideas</div>
+          <div class="chip" onclick="useChip(this)">Solbe 5t+9=4t+23</div>
           <div class="chip" onclick="useChip(this)">Debug my code</div>
         </div>
       </div>
