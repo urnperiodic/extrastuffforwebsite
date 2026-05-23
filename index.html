@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Please do not use useless prompts. I pay for this. </title>
+  <title>granddia AI - Chat with Images</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -236,11 +236,17 @@
 
     .msg-row.user .msg-label { color: rgba(232,255,71,0.5); }
 
+    .msg-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 80%;
+    }
+
     .bubble {
       padding: 12px 16px;
       font-size: 0.92rem;
       line-height: 1.6;
-      max-width: 80%;
       word-break: break-word;
       white-space: pre-wrap;
     }
@@ -257,6 +263,29 @@
       border: 1px solid rgba(100,255,100,0.08);
       border-radius: 4px 16px 16px 16px;
       color: var(--text);
+    }
+
+    /* Image attachment */
+    .image-attachment {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      max-width: 300px;
+    }
+
+    .image-attachment img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .msg-row.user .image-attachment {
+      border: 1px solid rgba(232,255,71,0.2);
+    }
+
+    .msg-row.ai .image-attachment {
+      border: 1px solid rgba(100,255,100,0.1);
     }
 
     /* typing indicator */
@@ -304,6 +333,51 @@
       backdrop-filter: blur(16px);
     }
 
+    .image-preview-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      padding: 0 8px;
+    }
+
+    .image-preview-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .image-preview-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 3px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    .remove-image:hover {
+      background: rgba(255,107,107,0.9);
+    }
+
     .compose {
       display: flex;
       align-items: flex-end;
@@ -317,6 +391,11 @@
 
     .compose:focus-within {
       border-color: rgba(232,255,71,0.3);
+    }
+
+    .compose.drag-over {
+      border-color: var(--accent);
+      background: rgba(232,255,71,0.03);
     }
 
     #msg-input {
@@ -334,6 +413,36 @@
     }
 
     #msg-input::placeholder { color: var(--muted); }
+
+    .input-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .icon-btn:hover {
+      color: var(--accent);
+      background: rgba(232,255,71,0.08);
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
 
     #send-btn {
       background: var(--accent);
@@ -380,6 +489,10 @@
     }
 
     .clear-btn:hover { color: var(--accent2); }
+
+    #file-input {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -399,7 +512,7 @@
     <div class="welcome" id="welcome">
       <div class="welcome-icon">⚡</div>
       <h2>What can I help with?</h2>
-      <p>Ask me anything — I'm powered by Gemini AI and ready to go.</p>
+      <p>Ask me anything — I'm powered by Gemini AI and ready to go. You can paste or attach images too!</p>
       <div class="suggestion-chips">
         <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
         <div class="chip" onclick="useChip(this)">Write me a poem</div>
@@ -410,37 +523,50 @@
   </div>
 
   <div id="input-bar">
-    <div class="compose">
+    <div class="image-preview-container" id="imagePreviewContainer"></div>
+    <div class="compose" id="compose">
       <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
-      <button id="send-btn" aria-label="Send">
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-      </button>
+      <div class="input-buttons">
+        <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="send-btn" aria-label="Send">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
     </div>
     <div class="input-footer">
-      <span>Enter to send · Shift+Enter for new line</span>
+      <span>Enter to send · Shift+Enter for new line · Paste images</span>
       <button class="clear-btn" onclick="clearChat()">clear chat</button>
     </div>
   </div>
 </div>
 
+<input type="file" id="file-input" accept="image/*" multiple />
+
 <script>
   // ════════════════════════════════════════════════════
-  // GEMINI API KEY
+  // GEMINI API - WITH IMAGE SUPPORT
   // ════════════════════════════════════════════════════
 
-  // Gemini model
   const MODEL = "gemini-2.5-flash";
 
-  // System prompt
   const SYSTEM_PROMPT =
     "You are a helpful, sharp, and concise AI assistant on the granddia website. Keep responses clear and direct. Use markdown sparingly.";
 
   let history = [];
   let isLoading = false;
+  let attachedImages = []; // Store base64 images
 
   const messagesEl = document.getElementById('messages');
   const msgInput   = document.getElementById('msg-input');
   const sendBtn    = document.getElementById('send-btn');
+  const attachBtn  = document.getElementById('attach-btn');
+  const fileInput  = document.getElementById('file-input');
+  const compose    = document.getElementById('compose');
+  const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
   function autoResize() {
     msgInput.style.height = 'auto';
@@ -457,6 +583,85 @@
   });
 
   sendBtn.addEventListener('click', sendMessage);
+  attachBtn.addEventListener('click', () => fileInput.click());
+
+  // File input change
+  fileInput.addEventListener('change', handleFileSelect);
+
+  // Paste image support
+  document.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const blob = item.getAsFile();
+        addImageFile(blob);
+      }
+    }
+  });
+
+  // Drag and drop
+  compose.addEventListener('dragover', e => {
+    e.preventDefault();
+    compose.classList.add('drag-over');
+  });
+
+  compose.addEventListener('dragleave', () => {
+    compose.classList.remove('drag-over');
+  });
+
+  compose.addEventListener('drop', e => {
+    e.preventDefault();
+    compose.classList.remove('drag-over');
+    const files = e.dataTransfer?.files;
+    if (files) {
+      for (let file of files) {
+        if (file.type.startsWith('image/')) {
+          addImageFile(file);
+        }
+      }
+    }
+  });
+
+  function handleFileSelect(e) {
+    const files = e.target.files;
+    for (let file of files) {
+      if (file.type.startsWith('image/')) {
+        addImageFile(file);
+      }
+    }
+    fileInput.value = ''; // Reset input
+  }
+
+  function addImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target.result;
+      attachedImages.push({
+        base64: base64,
+        name: file.name,
+        type: file.type
+      });
+      renderImagePreviews();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderImagePreviews() {
+    imagePreviewContainer.innerHTML = attachedImages.map((img, idx) => `
+      <div class="image-preview-item">
+        <img src="${img.base64}" alt="Attached image" />
+        <button class="remove-image" onclick="removeImage(${idx})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removeImage(idx) {
+    attachedImages.splice(idx, 1);
+    renderImagePreviews();
+  }
 
   function useChip(el) {
     msgInput.value = el.textContent;
@@ -469,16 +674,32 @@
     if (w) w.remove();
   }
 
-  function appendRow(role, text) {
+  function appendRow(role, text, images = []) {
     removeWelcome();
 
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
 
-    row.innerHTML = `
+    let content = `
       <div class="msg-label">${role === 'user' ? 'you' : 'granddia AI'}</div>
-      <div class="bubble">${escapeHtml(text)}</div>
+      <div class="msg-content">
     `;
+
+    // Add images if present
+    if (images.length > 0) {
+      images.forEach(img => {
+        content += `<div class="image-attachment"><img src="${img}" alt="Image" /></div>`;
+      });
+    }
+
+    // Add text
+    if (text) {
+      content += `<div class="bubble">${escapeHtml(text)}</div>`;
+    }
+
+    content += `</div>`;
+
+    row.innerHTML = content;
 
     messagesEl.appendChild(row);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -495,7 +716,9 @@
 
     row.innerHTML = `
       <div class="msg-label">granddia AI</div>
-      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <div class="msg-content">
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+      </div>
     `;
 
     messagesEl.appendChild(row);
@@ -526,25 +749,54 @@
   async function sendMessage() {
     const text = msgInput.value.trim();
 
-    if (!text || isLoading) return;
+    if ((!text && attachedImages.length === 0) || isLoading) return;
 
     isLoading = true;
     sendBtn.disabled = true;
+    attachBtn.disabled = true;
 
     msgInput.value = '';
     msgInput.style.height = 'auto';
 
-    appendRow('user', text);
+    // Show message with images
+    const imageDataUrls = attachedImages.map(img => img.base64);
+    appendRow('user', text, imageDataUrls);
 
-    history.push({
+    // Build the request with images
+    let userMessage = {
       role: "user",
-      parts: [{ text }]
-    });
+      parts: []
+    };
+
+    // Add images as inline data
+    for (let img of attachedImages) {
+      const base64Data = img.base64.split(',')[1]; // Remove data:image/...;base64, prefix
+      const mimeType = img.type;
+      
+      userMessage.parts.push({
+        inlineData: {
+          mimeType: mimeType,
+          data: base64Data
+        }
+      });
+    }
+
+    // Add text
+    if (text) {
+      userMessage.parts.push({
+        text: text
+      });
+    }
+
+    history.push(userMessage);
+
+    // Clear attached images after sending
+    attachedImages = [];
+    renderImagePreviews();
 
     appendTyping();
 
     try {
-
       const response = await fetch(
         `/api/chat`,
         {
@@ -552,14 +804,11 @@
           headers: {
             'Content-Type': 'application/json'
           },
-
           body: JSON.stringify({
             systemInstruction: {
               parts: [{ text: SYSTEM_PROMPT }]
             },
-
             contents: history,
-
             generationConfig: {
               temperature: 0.8,
               topP: 0.95,
@@ -574,7 +823,6 @@
 
       if (!response.ok) {
         console.error(data);
-
         throw new Error(
           data.error?.message || `HTTP ${response.status}`
         );
@@ -593,32 +841,29 @@
       appendRow('ai', reply);
 
     } catch (err) {
-
       console.error(err);
-
       removeTyping();
-
       appendError(
         err.message || "Something went wrong."
       );
-
     } finally {
-
       isLoading = false;
       sendBtn.disabled = false;
+      attachBtn.disabled = false;
       msgInput.focus();
     }
   }
 
   function clearChat() {
-
     history = [];
+    attachedImages = [];
+    renderImagePreviews();
 
     messagesEl.innerHTML = `
       <div class="welcome" id="welcome">
         <div class="welcome-icon">⚡</div>
         <h2>What can I help with?</h2>
-        <p>Ask me anything — I'm powered by Gemini AI and ready to go.</p>
+        <p>Ask me anything — I'm powered by Gemini AI and ready to go. You can paste or attach images too!</p>
 
         <div class="suggestion-chips">
           <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
