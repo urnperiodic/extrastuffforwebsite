@@ -98,25 +98,39 @@
     @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,-60px) scale(1.15); } }
     @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px,50px) scale(1.1); } }
 
-    .app { position: relative; z-index: 1; display: grid; grid-template-rows: auto 1fr auto; height: 100vh; max-width: 800px; margin: 0 auto; }
+    /* ── APP LAYOUT: full-width header/input, centered content ── */
+    .app { position: relative; z-index: 1; display: grid; grid-template-rows: auto 1fr auto; height: 100vh; width: 100%; }
 
-    /* ── HEADER ── */
+    /* Inner wrappers keep content centered to 800px */
+    .header-inner,
+    .input-inner {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .input-inner { display: block; }
+
+    /* ── HEADER (full width) ── */
     header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
       background: var(--header-bg); backdrop-filter: blur(20px);
       animation: slideDown 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
       transition: background 0.5s, border-color 0.5s; z-index: 10;
+      width: 100%;
     }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
     .wordmark { display: flex; align-items: center; gap: 10px; }
 
     /* ════════════════════════════════════════════════════════
-       ✦ ANIMATED GEMINI LOGO — HEADER (small)
+       ✦ ANIMATED GEMINI LOGO — HEADER (small) — 25% bigger
        ════════════════════════════════════════════════════════ */
     .wordmark-icon {
-      width: 32px; height: 32px; border-radius: 10px;
+      width: 40px; height: 40px; border-radius: 12px;
       background: linear-gradient(135deg, rgba(var(--accent-rgb),0.3), rgba(var(--accent-rgb),0.1));
       border: 1px solid rgba(var(--accent-rgb),0.3);
       display: flex; align-items: center; justify-content: center;
@@ -148,7 +162,7 @@
       content: '';
       position: absolute;
       inset: 2px;
-      border-radius: 8px;
+      border-radius: 10px;
       background: linear-gradient(135deg, rgba(var(--accent-rgb),0.3), rgba(var(--accent-rgb),0.1));
       z-index: 1;
     }
@@ -168,11 +182,11 @@
       to   { transform: rotate(360deg); }
     }
 
-    /* The actual sparkle SVG */
+    /* The actual sparkle SVG — 25% bigger */
     .gemini-logo-svg {
       position: relative;
       z-index: 2;
-      width: 18px; height: 18px;
+      width: 22px; height: 22px;
       animation: logoSpin 6s cubic-bezier(0.65, 0, 0.35, 1) infinite,
                  logoBreathe 3s ease-in-out infinite;
       transform-origin: center;
@@ -261,7 +275,6 @@
       to   { transform: rotate(360deg); }
     }
 
-    /* The big sparkle SVG */
     .gemini-logo-svg-large {
       position: relative;
       z-index: 2;
@@ -286,7 +299,6 @@
       50%      { filter: drop-shadow(0 0 16px rgba(var(--accent-rgb), 0.95)) drop-shadow(0 0 30px rgba(244, 114, 182, 0.4)) brightness(1.3); }
     }
 
-    /* Sparkle particles around the welcome logo */
     .sparkle-particle {
       position: absolute;
       width: 4px; height: 4px;
@@ -323,9 +335,9 @@
 
     .header-right { display: flex; align-items: center; gap: 10px; }
 
-    /* palette dots */
-    .palette-switcher { display: flex; gap: 6px; align-items: center; }
-    .palette-btn { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s; }
+    /* palette dots — 25% bigger (18 → 22.5 ≈ 23px) */
+    .palette-switcher { display: flex; gap: 8px; align-items: center; }
+    .palette-btn { width: 23px; height: 23px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s; }
     .palette-btn:hover { transform: scale(1.3); }
     .palette-btn.active { border-color: var(--text); }
     .palette-btn[data-p="violet"]   { background: #a78bfa; }
@@ -335,21 +347,22 @@
     .palette-btn[data-p="white"]    { background: #ffffff; border: 2px solid #ccc; }
     .palette-btn[data-p="reset"]    { background: #000000; }
 
-    /* settings icon btn */
+    /* settings icon btn — 25% bigger (32 → 40) */
     .settings-toggle {
-      width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
+      width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--border);
       background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
       color: var(--muted); transition: color 0.3s, background 0.3s, border-color 0.5s, transform 0.3s;
     }
+    .settings-toggle svg { width: 20px; height: 20px; }
     .settings-toggle:hover { color: var(--accent); background: rgba(var(--accent-rgb),0.1); transform: rotate(30deg); }
     .settings-toggle.open { color: var(--accent); background: rgba(var(--accent-rgb),0.12); transform: rotate(60deg); }
 
     .model-badge {
-      display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px;
+      display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted);
+      background: var(--surface2); border: 1px solid var(--border); padding: 7px 15px; border-radius: 999px;
       transition: background 0.5s, border-color 0.5s, color 0.5s;
     }
-    .model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2.5s ease-in-out infinite; transition: background 0.5s; }
+    .model-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2.5s ease-in-out infinite; transition: background 0.5s; }
     @keyframes pulse { 0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(var(--accent-rgb),0.4); } 50% { opacity:0.5; box-shadow:0 0 0 4px rgba(var(--accent-rgb),0); } }
 
     /* ── SETTINGS PANEL ── */
@@ -370,14 +383,15 @@
       transition: background 0.5s, border-color 0.5s;
     }
     .settings-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em; color: var(--text); transition: color 0.5s; }
+    /* settings close — 25% bigger */
     .settings-close {
-      width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
+      width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--border);
       background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--muted); font-size: 16px; transition: color 0.3s, background 0.3s; line-height: 1;
+      color: var(--muted); font-size: 20px; transition: color 0.3s, background 0.3s; line-height: 1;
     }
     .settings-close:hover { color: var(--accent2); background: rgba(244,114,182,0.1); }
 
-    .settings-body { padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+    .settings-body { padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; flex: 1; max-width: 800px; width: 100%; margin: 0 auto; }
 
     .settings-section { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.5s ease both; }
     .settings-section:nth-child(2) { animation-delay: 0.1s; }
@@ -403,18 +417,19 @@
     #prompt-textarea::placeholder { color: var(--muted); }
     .prompt-char-count { font-size: 0.72rem; color: var(--muted); text-align: right; margin-top: 8px; transition: color 0.5s; }
 
+    /* settings buttons — 25% bigger */
     .settings-btn-row { display: flex; gap: 10px; }
     .btn-save {
-      flex: 1; padding: 11px 20px; border-radius: 10px; border: none; cursor: pointer;
+      flex: 1; padding: 14px 25px; border-radius: 12px; border: none; cursor: pointer;
       background: var(--accent); color: var(--bg); font-family: 'Outfit', sans-serif;
-      font-size: 0.88rem; font-weight: 600; transition: transform 0.2s, opacity 0.3s, background 0.5s, box-shadow 0.3s;
+      font-size: 1rem; font-weight: 600; transition: transform 0.2s, opacity 0.3s, background 0.5s, box-shadow 0.3s;
     }
     .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(var(--accent-rgb),0.4); }
     .btn-save:active { transform: translateY(0); }
     .btn-reset-prompt {
-      padding: 11px 18px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer;
+      padding: 14px 22px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer;
       background: var(--surface2); color: var(--muted); font-family: 'Outfit', sans-serif;
-      font-size: 0.88rem; transition: color 0.2s, border-color 0.2s, background 0.5s;
+      font-size: 1rem; transition: color 0.2s, border-color 0.2s, background 0.5s;
     }
     .btn-reset-prompt:hover { color: var(--accent2); border-color: var(--accent2); }
 
@@ -448,7 +463,7 @@
     .theme-tile[data-t="reset"]    { background: rgba(120,120,140,0.08); border-color: rgba(120,120,140,0.15); }
 
     /* ── MESSAGES ── */
-    #messages { overflow-y: auto; padding: 28px 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+    #messages { overflow-y: auto; padding: 28px 24px 16px; display: flex; flex-direction: column; gap: 20px; max-width: 800px; width: 100%; margin: 0 auto; }
     #messages::-webkit-scrollbar { width: 3px; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
@@ -459,9 +474,10 @@
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
     .suggestion-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px; animation: fadeUp 0.6s ease 0.55s both; }
+    /* chips — 25% bigger */
     .chip {
-      font-size:0.78rem; color:var(--text); background:var(--surface2); border:1px solid var(--border);
-      padding:7px 16px; border-radius:999px; cursor:pointer; transition:border-color 0.3s, background 0.3s, transform 0.2s, color 0.5s;
+      font-size:0.97rem; color:var(--text); background:var(--surface2); border:1px solid var(--border);
+      padding:9px 20px; border-radius:999px; cursor:pointer; transition:border-color 0.3s, background 0.3s, transform 0.2s, color 0.5s;
       animation: chipSlideUp 0.4s ease-out both;
     }
     .chip:nth-child(1) { animation-delay: 0.6s; }
@@ -517,8 +533,8 @@
 
     .error-bubble{font-size:0.82rem;color:var(--accent2);background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);border-radius:8px;padding:10px 14px;max-width:80%;animation:slideInLeft 0.4s ease both;}
 
-    /* ── INPUT BAR ── */
-    #input-bar{padding:14px 24px 20px;border-top:1px solid var(--border);background:var(--input-bg);backdrop-filter:blur(20px);transition:border-color 0.5s,background 0.5s;}
+    /* ── INPUT BAR (full width) ── */
+    #input-bar{padding:14px 24px 20px;border-top:1px solid var(--border);background:var(--input-bg);backdrop-filter:blur(20px);transition:border-color 0.5s,background 0.5s; width: 100%;}
 
     .image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:0 8px;}
     .image-preview-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);animation:scaleUp 0.3s ease both;}
@@ -538,16 +554,19 @@
     #msg-input::placeholder{color:var(--muted);}
 
     .input-buttons{display:flex;gap:6px;}
-    .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:color 0.2s,background 0.2s,transform 0.2s;flex-shrink:0;}
+    /* attach icon button — 25% bigger (34 → 42) */
+    .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:12px;transition:color 0.2s,background 0.2s,transform 0.2s;flex-shrink:0;}
+    .icon-btn svg { width: 22px; height: 22px; }
     .icon-btn:hover{color:var(--accent);background:rgba(var(--accent-rgb),0.12);transform:scale(1.12);}
     .icon-btn:active{transform:scale(0.92);}
     .icon-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
 
-    #send-btn{background:var(--accent);border:none;border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s;}
+    /* send button — 25% bigger (40 → 50) */
+    #send-btn{background:var(--accent);border:none;border-radius:15px;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s;}
     #send-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(var(--accent-rgb),0.4);}
     #send-btn:active{transform:scale(0.95);}
     #send-btn:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none;}
-    #send-btn svg{width:17px;height:17px;fill:var(--bg);}
+    #send-btn svg{width:21px;height:21px;fill:var(--bg);}
 
     .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;}
     .input-footer span{font-size:0.67rem;color:var(--muted);transition:color 0.5s;}
@@ -558,9 +577,6 @@
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════
-     SVG GRADIENT DEFINITIONS for animated Gemini logo
-     ════════════════════════════════════════════════════════ -->
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="geminiGradHeader" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -668,42 +684,42 @@
   </div>
 
   <header>
-    <div class="wordmark">
-      <!-- ✦ Animated Gemini logo (header) -->
-      <div class="wordmark-icon">
-        <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
-        </svg>
+    <div class="header-inner">
+      <div class="wordmark">
+        <div class="wordmark-icon">
+          <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="wordmark-main">Gemini AI</div>
+          <div class="wordmark-sub">Powered by Gemini</div>
+        </div>
       </div>
-      <div>
-        <div class="wordmark-main">Gemini AI</div>
-        <div class="wordmark-sub">Powered by Gemini</div>
+      <div class="header-right">
+        <div class="palette-switcher">
+          <button class="palette-btn" data-p="violet" title="Violet"></button>
+          <button class="palette-btn" data-p="cyborg" title="Cyborg"></button>
+          <button class="palette-btn" data-p="ice" title="Ice"></button>
+          <button class="palette-btn" data-p="rosepine" title="Rose Pine"></button>
+          <button class="palette-btn active" data-p="white" title="White"></button>
+          <button class="palette-btn" data-p="reset" title="Black"></button>
+        </div>
+        <div class="model-badge">
+          <span class="model-dot"></span>
+          <span>gemini-2.5-flash</span>
+        </div>
+        <button class="settings-toggle" id="settingsToggle" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
       </div>
-    </div>
-    <div class="header-right">
-      <div class="palette-switcher">
-        <button class="palette-btn" data-p="violet" title="Violet"></button>
-        <button class="palette-btn" data-p="cyborg" title="Cyborg"></button>
-        <button class="palette-btn" data-p="ice" title="Ice"></button>
-        <button class="palette-btn" data-p="rosepine" title="Rose Pine"></button>
-        <button class="palette-btn active" data-p="white" title="White"></button>
-        <button class="palette-btn" data-p="reset" title="Black"></button>
-      </div>
-      <div class="model-badge">
-        <span class="model-dot"></span>
-        <span>gemini-2.5-flash</span>
-      </div>
-      <button class="settings-toggle" id="settingsToggle" title="Settings">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
     </div>
   </header>
 
   <div id="messages">
     <div class="welcome" id="welcome">
-      <!-- ✦ Animated Gemini logo (welcome, large) -->
       <div class="welcome-icon">
         <span class="sparkle-particle p1"></span>
         <span class="sparkle-particle p2"></span>
@@ -725,23 +741,25 @@
   </div>
 
   <div id="input-bar">
-    <div class="image-preview-container" id="imagePreviewContainer"></div>
-    <div class="compose" id="compose">
-      <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
-      <div class="input-buttons">
-        <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-          </svg>
-        </button>
-        <button id="send-btn" aria-label="Send">
-          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-        </button>
+    <div class="input-inner">
+      <div class="image-preview-container" id="imagePreviewContainer"></div>
+      <div class="compose" id="compose">
+        <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
+        <div class="input-buttons">
+          <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+          </button>
+          <button id="send-btn" aria-label="Send">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="input-footer">
-      <span>Enter to send · Shift+Enter for new line · Paste images</span>
-      <button class="clear-btn" onclick="clearChat()">clear chat</button>
+      <div class="input-footer">
+        <span>Enter to send · Shift+Enter for new line · Paste images</span>
+        <button class="clear-btn" onclick="clearChat()">clear chat</button>
+      </div>
     </div>
   </div>
 </div>
@@ -762,7 +780,6 @@
   const compose     = document.getElementById('compose');
   const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-  /* ── SETTINGS PANEL ── */
   const settingsPanel  = document.getElementById('settingsPanel');
   const settingsToggle = document.getElementById('settingsToggle');
   const settingsClose  = document.getElementById('settingsClose');
@@ -808,21 +825,17 @@
     closeSettings();
   });
 
-  /* ── THEME ── */
   const themeMap = { violet:'violet', cyborg:'cyborg', ice:'ice', rosepine:'rosepine', white:'', reset:'black' };
 
   function applyTheme(p) {
     document.documentElement.dataset.theme = themeMap[p];
-    // sync header dots
     document.querySelectorAll('.palette-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p));
-    // sync settings tiles
     document.querySelectorAll('.theme-tile').forEach(t => t.classList.toggle('active', t.dataset.t === p));
   }
 
   document.querySelectorAll('.palette-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.p)));
   document.querySelectorAll('.theme-tile').forEach(tile => tile.addEventListener('click', () => applyTheme(tile.dataset.t)));
 
-  /* ── MARKDOWN ── */
   function renderMarkdown(text) {
     function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     const cb=[], ic=[];
@@ -840,7 +853,6 @@
     return text;
   }
 
-  /* ── INPUT ── */
   function autoResize(){msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px';}
   msgInput.addEventListener('input',autoResize);
   msgInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
@@ -937,7 +949,6 @@
       </div>`;
   }
 
-  // init prompt textarea
   promptTextarea.value = DEFAULT_PROMPT;
   charCount.textContent = DEFAULT_PROMPT.length;
 </script>
