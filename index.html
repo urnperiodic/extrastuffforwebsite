@@ -80,29 +80,16 @@
       --settings-bg: #1a1a1a; --settings-card: #2d2d2d; --scanline-color: rgba(255,255,255,0.008);
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Outfit', sans-serif;
-      overflow: hidden;
-      transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; overflow: hidden; transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline-color) 2px, var(--scanline-color) 4px);
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
     .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
       background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
       transition: background 0.5s;
     }
@@ -111,57 +98,25 @@
     @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,-60px) scale(1.15); } }
     @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px,50px) scale(1.1); } }
 
-    /* ── APP LAYOUT ── */
-    .app {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      height: 100vh;
-      width: 100%;
-    }
-
-    header,
-    #input-bar {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-
-    .header-inner,
-    .input-inner,
-    #messages,
-    .settings-body {
-      width: min(800px, calc(100vw - 48px));
-      margin: 0 auto;
-    }
-
-    .header-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .input-inner {
-      display: block;
-    }
+    .app { position: relative; z-index: 1; display: grid; grid-template-rows: auto 1fr auto; height: 100vh; max-width: 800px; margin: 0 auto; }
 
     /* ── HEADER ── */
     header {
-      padding: 14px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--header-bg);
-      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      background: var(--header-bg); backdrop-filter: blur(20px);
       animation: slideDown 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
-      transition: background 0.5s, border-color 0.5s;
-      z-index: 10;
+      transition: background 0.5s, border-color 0.5s; z-index: 10;
     }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
     .wordmark { display: flex; align-items: center; gap: 10px; }
 
+    /* ════════════════════════════════════════════════════════
+       ✦ ANIMATED GEMINI LOGO — HEADER (small)
+       ════════════════════════════════════════════════════════ */
     .wordmark-icon {
-      width: 40px; height: 40px; border-radius: 12px;
+      width: 32px; height: 32px; border-radius: 10px;
       background: linear-gradient(135deg, rgba(var(--accent-rgb),0.3), rgba(var(--accent-rgb),0.1));
       border: 1px solid rgba(var(--accent-rgb),0.3);
       display: flex; align-items: center; justify-content: center;
@@ -193,7 +148,7 @@
       content: '';
       position: absolute;
       inset: 2px;
-      border-radius: 10px;
+      border-radius: 8px;
       background: linear-gradient(135deg, rgba(var(--accent-rgb),0.3), rgba(var(--accent-rgb),0.1));
       z-index: 1;
     }
@@ -213,10 +168,11 @@
       to   { transform: rotate(360deg); }
     }
 
+    /* The actual sparkle SVG */
     .gemini-logo-svg {
       position: relative;
       z-index: 2;
-      width: 22px; height: 22px;
+      width: 18px; height: 18px;
       animation: logoSpin 6s cubic-bezier(0.65, 0, 0.35, 1) infinite,
                  logoBreathe 3s ease-in-out infinite;
       transform-origin: center;
@@ -239,6 +195,9 @@
       50%      { filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.9)) brightness(1.25); }
     }
 
+    /* ════════════════════════════════════════════════════════
+       ✦ ANIMATED GEMINI LOGO — WELCOME (large)
+       ════════════════════════════════════════════════════════ */
     .welcome-icon {
       width: 80px; height: 80px; border-radius: 24px;
       background: linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.05));
@@ -302,6 +261,7 @@
       to   { transform: rotate(360deg); }
     }
 
+    /* The big sparkle SVG */
     .gemini-logo-svg-large {
       position: relative;
       z-index: 2;
@@ -326,6 +286,7 @@
       50%      { filter: drop-shadow(0 0 16px rgba(var(--accent-rgb), 0.95)) drop-shadow(0 0 30px rgba(244, 114, 182, 0.4)) brightness(1.3); }
     }
 
+    /* Sparkle particles around the welcome logo */
     .sparkle-particle {
       position: absolute;
       width: 4px; height: 4px;
@@ -362,8 +323,9 @@
 
     .header-right { display: flex; align-items: center; gap: 10px; }
 
-    .palette-switcher { display: flex; gap: 8px; align-items: center; }
-    .palette-btn { width: 23px; height: 23px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s; }
+    /* palette dots */
+    .palette-switcher { display: flex; gap: 6px; align-items: center; }
+    .palette-btn { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s; }
     .palette-btn:hover { transform: scale(1.3); }
     .palette-btn.active { border-color: var(--text); }
     .palette-btn[data-p="violet"]   { background: #a78bfa; }
@@ -373,21 +335,21 @@
     .palette-btn[data-p="white"]    { background: #ffffff; border: 2px solid #ccc; }
     .palette-btn[data-p="reset"]    { background: #000000; }
 
+    /* settings icon btn */
     .settings-toggle {
-      width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--border);
+      width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
       background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
       color: var(--muted); transition: color 0.3s, background 0.3s, border-color 0.5s, transform 0.3s;
     }
-    .settings-toggle svg { width: 20px; height: 20px; }
     .settings-toggle:hover { color: var(--accent); background: rgba(var(--accent-rgb),0.1); transform: rotate(30deg); }
     .settings-toggle.open { color: var(--accent); background: rgba(var(--accent-rgb),0.12); transform: rotate(60deg); }
 
     .model-badge {
-      display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border); padding: 7px 15px; border-radius: 999px;
+      display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted);
+      background: var(--surface2); border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px;
       transition: background 0.5s, border-color 0.5s, color 0.5s;
     }
-    .model-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2.5s ease-in-out infinite; transition: background 0.5s; }
+    .model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2.5s ease-in-out infinite; transition: background 0.5s; }
     @keyframes pulse { 0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(var(--accent-rgb),0.4); } 50% { opacity:0.5; box-shadow:0 0 0 4px rgba(var(--accent-rgb),0); } }
 
     /* ── SETTINGS PANEL ── */
@@ -408,21 +370,14 @@
       transition: background 0.5s, border-color 0.5s;
     }
     .settings-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em; color: var(--text); transition: color 0.5s; }
-
     .settings-close {
-      width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--border);
+      width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
       background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--muted); font-size: 20px; transition: color 0.3s, background 0.3s; line-height: 1;
+      color: var(--muted); font-size: 16px; transition: color 0.3s, background 0.3s; line-height: 1;
     }
     .settings-close:hover { color: var(--accent2); background: rgba(244,114,182,0.1); }
 
-    .settings-body {
-      padding: 28px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      flex: 1;
-    }
+    .settings-body { padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 
     .settings-section { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.5s ease both; }
     .settings-section:nth-child(2) { animation-delay: 0.1s; }
@@ -450,16 +405,16 @@
 
     .settings-btn-row { display: flex; gap: 10px; }
     .btn-save {
-      flex: 1; padding: 14px 25px; border-radius: 12px; border: none; cursor: pointer;
+      flex: 1; padding: 11px 20px; border-radius: 10px; border: none; cursor: pointer;
       background: var(--accent); color: var(--bg); font-family: 'Outfit', sans-serif;
-      font-size: 1rem; font-weight: 600; transition: transform 0.2s, opacity 0.3s, background 0.5s, box-shadow 0.3s;
+      font-size: 0.88rem; font-weight: 600; transition: transform 0.2s, opacity 0.3s, background 0.5s, box-shadow 0.3s;
     }
     .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(var(--accent-rgb),0.4); }
     .btn-save:active { transform: translateY(0); }
     .btn-reset-prompt {
-      padding: 14px 22px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer;
+      padding: 11px 18px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer;
       background: var(--surface2); color: var(--muted); font-family: 'Outfit', sans-serif;
-      font-size: 1rem; transition: color 0.2s, border-color 0.2s, background 0.5s;
+      font-size: 0.88rem; transition: color 0.2s, border-color 0.2s, background 0.5s;
     }
     .btn-reset-prompt:hover { color: var(--accent2); border-color: var(--accent2); }
 
@@ -473,6 +428,7 @@
     }
     .save-toast.visible { opacity: 1; transform: translateY(0); }
 
+    /* theme grid in settings */
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .theme-tile {
       border-radius: 10px; padding: 10px 12px; border: 2px solid transparent;
@@ -492,13 +448,7 @@
     .theme-tile[data-t="reset"]    { background: rgba(120,120,140,0.08); border-color: rgba(120,120,140,0.15); }
 
     /* ── MESSAGES ── */
-    #messages {
-      overflow-y: auto;
-      padding: 28px 0 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+    #messages { overflow-y: auto; padding: 28px 24px 16px; display: flex; flex-direction: column; gap: 20px; }
     #messages::-webkit-scrollbar { width: 3px; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
@@ -510,8 +460,8 @@
 
     .suggestion-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px; animation: fadeUp 0.6s ease 0.55s both; }
     .chip {
-      font-size:0.97rem; color:var(--text); background:var(--surface2); border:1px solid var(--border);
-      padding:9px 20px; border-radius:999px; cursor:pointer; transition:border-color 0.3s, background 0.3s, transform 0.2s, color 0.5s;
+      font-size:0.78rem; color:var(--text); background:var(--surface2); border:1px solid var(--border);
+      padding:7px 16px; border-radius:999px; cursor:pointer; transition:border-color 0.3s, background 0.3s, transform 0.2s, color 0.5s;
       animation: chipSlideUp 0.4s ease-out both;
     }
     .chip:nth-child(1) { animation-delay: 0.6s; }
@@ -535,15 +485,7 @@
 
     .msg-label { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:0 4px; transition:color 0.5s; }
     .msg-row.user .msg-label { color:rgba(var(--accent-rgb),0.6); }
-
-    .msg-content {
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      max-width:80%;
-    }
-    .msg-row.user .msg-content { align-items: flex-end; }
-    .msg-row.ai .msg-content { align-items: flex-start; }
+    .msg-content { display:flex; flex-direction:column; gap:8px; max-width:80%; }
 
     .bubble { padding:12px 16px; font-size:0.92rem; line-height:1.6; word-break:break-word; transition:background 0.5s, border-color 0.5s; border-radius: 16px; }
     .msg-row.user .bubble { background:var(--user-bubble); border:1px solid rgba(var(--accent-rgb),0.15); border-radius:16px 4px 16px 16px; color:var(--text); white-space:pre-wrap; }
@@ -562,22 +504,9 @@
     .bubble blockquote{border-left:3px solid var(--accent);padding:4px 12px;margin:8px 0;color:var(--muted);font-style:italic;background:rgba(var(--accent-rgb),0.04);border-radius:0 6px 6px 0;transition:border-color 0.5s,background 0.5s;}
     .bubble hr{border:none;border-top:1px solid var(--border);margin:10px 0;}
 
-    .image-attachment{
-      border-radius:12px;
-      overflow:hidden;
-      border:1px solid var(--border);
-      max-width:300px;
-      transition:border-color 0.5s;
-      display:block;
-    }
+    .image-attachment{border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:300px;transition:border-color 0.5s;}
     .image-attachment img{width:100%;height:auto;display:block;border-radius:8px;}
-    .msg-row.user .image-attachment{
-      align-self:flex-end;
-      border-color:rgba(var(--accent-rgb),0.25);
-    }
-    .msg-row.ai .image-attachment{
-      align-self:flex-start;
-    }
+    .msg-row.user .image-attachment{border-color:rgba(var(--accent-rgb),0.25);}
 
     .typing-dots{display:flex;gap:5px;padding:14px 18px;background:var(--ai-bubble);border:1px solid var(--border);border-radius:4px 16px 16px 16px;width:fit-content;animation:slideInLeft 0.4s ease both;transition:background 0.5s,border-color 0.5s;}
     .typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:bounce 1.4s ease-in-out infinite;transition:background 0.5s;}
@@ -589,13 +518,7 @@
     .error-bubble{font-size:0.82rem;color:var(--accent2);background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);border-radius:8px;padding:10px 14px;max-width:80%;animation:slideInLeft 0.4s ease both;}
 
     /* ── INPUT BAR ── */
-    #input-bar{
-      padding:14px 24px 20px;
-      border-top:1px solid var(--border);
-      background:var(--input-bg);
-      backdrop-filter:blur(20px);
-      transition:border-color 0.5s,background 0.5s;
-    }
+    #input-bar{padding:14px 24px 20px;border-top:1px solid var(--border);background:var(--input-bg);backdrop-filter:blur(20px);transition:border-color 0.5s,background 0.5s;}
 
     .image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:0 8px;}
     .image-preview-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);animation:scaleUp 0.3s ease both;}
@@ -615,45 +538,29 @@
     #msg-input::placeholder{color:var(--muted);}
 
     .input-buttons{display:flex;gap:6px;}
-    .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:12px;transition:color 0.2s,background 0.2s,transform 0.2s;flex-shrink:0;}
-    .icon-btn svg { width: 22px; height: 22px; }
+    .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:color 0.2s,background 0.2s,transform 0.2s;flex-shrink:0;}
     .icon-btn:hover{color:var(--accent);background:rgba(var(--accent-rgb),0.12);transform:scale(1.12);}
     .icon-btn:active{transform:scale(0.92);}
     .icon-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
 
-    #send-btn{background:var(--accent);border:none;border-radius:15px;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s;}
+    #send-btn{background:var(--accent);border:none;border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s;}
     #send-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(var(--accent-rgb),0.4);}
     #send-btn:active{transform:scale(0.95);}
     #send-btn:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none;}
-    #send-btn svg{width:21px;height:21px;fill:var(--bg);}
+    #send-btn svg{width:17px;height:17px;fill:var(--bg);}
 
     .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;}
     .input-footer span{font-size:0.67rem;color:var(--muted);transition:color 0.5s;}
     .clear-btn{font-size:0.67rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color 0.2s;}
     .clear-btn:hover{color:var(--accent2);}
     #file-input{display:none;}
-
-    @media (max-width: 700px) {
-      .header-right {
-        gap: 8px;
-      }
-
-      .model-badge {
-        display: none;
-      }
-
-      .theme-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .msg-content {
-        max-width: 92%;
-      }
-    }
   </style>
 </head>
 <body>
 
+<!-- ════════════════════════════════════════════════════════
+     SVG GRADIENT DEFINITIONS for animated Gemini logo
+     ════════════════════════════════════════════════════════ -->
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="geminiGradHeader" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -761,42 +668,42 @@
   </div>
 
   <header>
-    <div class="header-inner">
-      <div class="wordmark">
-        <div class="wordmark-icon">
-          <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="wordmark-main">Gemini AI</div>
-          <div class="wordmark-sub">Powered by Gemini</div>
-        </div>
+    <div class="wordmark">
+      <!-- ✦ Animated Gemini logo (header) -->
+      <div class="wordmark-icon">
+        <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
+        </svg>
       </div>
-      <div class="header-right">
-        <div class="palette-switcher">
-          <button class="palette-btn" data-p="violet" title="Violet"></button>
-          <button class="palette-btn" data-p="cyborg" title="Cyborg"></button>
-          <button class="palette-btn" data-p="ice" title="Ice"></button>
-          <button class="palette-btn" data-p="rosepine" title="Rose Pine"></button>
-          <button class="palette-btn active" data-p="white" title="White"></button>
-          <button class="palette-btn" data-p="reset" title="Black"></button>
-        </div>
-        <div class="model-badge">
-          <span class="model-dot"></span>
-          <span>gemini-2.5-flash</span>
-        </div>
-        <button class="settings-toggle" id="settingsToggle" title="Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-        </button>
+      <div>
+        <div class="wordmark-main">Gemini AI</div>
+        <div class="wordmark-sub">Powered by Gemini</div>
       </div>
+    </div>
+    <div class="header-right">
+      <div class="palette-switcher">
+        <button class="palette-btn" data-p="violet" title="Violet"></button>
+        <button class="palette-btn" data-p="cyborg" title="Cyborg"></button>
+        <button class="palette-btn" data-p="ice" title="Ice"></button>
+        <button class="palette-btn" data-p="rosepine" title="Rose Pine"></button>
+        <button class="palette-btn active" data-p="white" title="White"></button>
+        <button class="palette-btn" data-p="reset" title="Black"></button>
+      </div>
+      <div class="model-badge">
+        <span class="model-dot"></span>
+        <span>gemini-2.5-flash</span>
+      </div>
+      <button class="settings-toggle" id="settingsToggle" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </div>
   </header>
 
   <div id="messages">
     <div class="welcome" id="welcome">
+      <!-- ✦ Animated Gemini logo (welcome, large) -->
       <div class="welcome-icon">
         <span class="sparkle-particle p1"></span>
         <span class="sparkle-particle p2"></span>
@@ -818,25 +725,23 @@
   </div>
 
   <div id="input-bar">
-    <div class="input-inner">
-      <div class="image-preview-container" id="imagePreviewContainer"></div>
-      <div class="compose" id="compose">
-        <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
-        <div class="input-buttons">
-          <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-            </svg>
-          </button>
-          <button id="send-btn" aria-label="Send">
-            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-          </button>
-        </div>
+    <div class="image-preview-container" id="imagePreviewContainer"></div>
+    <div class="compose" id="compose">
+      <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="2000"></textarea>
+      <div class="input-buttons">
+        <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+          </svg>
+        </button>
+        <button id="send-btn" aria-label="Send">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
       </div>
-      <div class="input-footer">
-        <span>Enter to send · Shift+Enter for new line · Paste images</span>
-        <button class="clear-btn" onclick="clearChat()">clear chat</button>
-      </div>
+    </div>
+    <div class="input-footer">
+      <span>Enter to send · Shift+Enter for new line · Paste images</span>
+      <button class="clear-btn" onclick="clearChat()">clear chat</button>
     </div>
   </div>
 </div>
@@ -857,6 +762,7 @@
   const compose     = document.getElementById('compose');
   const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
+  /* ── SETTINGS PANEL ── */
   const settingsPanel  = document.getElementById('settingsPanel');
   const settingsToggle = document.getElementById('settingsToggle');
   const settingsClose  = document.getElementById('settingsClose');
@@ -902,17 +808,21 @@
     closeSettings();
   });
 
+  /* ── THEME ── */
   const themeMap = { violet:'violet', cyborg:'cyborg', ice:'ice', rosepine:'rosepine', white:'', reset:'black' };
 
   function applyTheme(p) {
     document.documentElement.dataset.theme = themeMap[p];
+    // sync header dots
     document.querySelectorAll('.palette-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p));
+    // sync settings tiles
     document.querySelectorAll('.theme-tile').forEach(t => t.classList.toggle('active', t.dataset.t === p));
   }
 
   document.querySelectorAll('.palette-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.p)));
   document.querySelectorAll('.theme-tile').forEach(tile => tile.addEventListener('click', () => applyTheme(tile.dataset.t)));
 
+  /* ── MARKDOWN ── */
   function renderMarkdown(text) {
     function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     const cb=[], ic=[];
@@ -930,6 +840,7 @@
     return text;
   }
 
+  /* ── INPUT ── */
   function autoResize(){msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px';}
   msgInput.addEventListener('input',autoResize);
   msgInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
@@ -998,4 +909,38 @@
     }catch(err){
       console.error(err);removeTyping();appendError(err.message||"Something went wrong.");
     }finally{
-      isLoading=false;sendBtn.disabled=false;attach
+      isLoading=false;sendBtn.disabled=false;attachBtn.disabled=false;msgInput.focus();
+    }
+  }
+
+  function clearChat(){
+    history=[];attachedImages=[];renderImagePreviews();
+    messagesEl.innerHTML=`
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">
+          <span class="sparkle-particle p1"></span>
+          <span class="sparkle-particle p2"></span>
+          <span class="sparkle-particle p3"></span>
+          <span class="sparkle-particle p4"></span>
+          <svg class="gemini-logo-svg-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z" fill="url(#geminiGradWelcome)"/>
+          </svg>
+        </div>
+        <h2>What Can I Help With?</h2>
+        <p>Made by TM — ask anything, paste images too.</p>
+        <div class="suggestion-chips">
+          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+          <div class="chip" onclick="useChip(this)">Write me a poem</div>
+          <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
+          <div class="chip" onclick="useChip(this)">Debug my code</div>
+        </div>
+      </div>`;
+  }
+
+  // init prompt textarea
+  promptTextarea.value = DEFAULT_PROMPT;
+  charCount.textContent = DEFAULT_PROMPT.length;
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
