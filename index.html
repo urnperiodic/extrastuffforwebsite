@@ -89,9 +89,26 @@
     .settings-toggle { width:32px; height:32px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:color 0.3s,background 0.3s,border-color 0.5s,transform 0.3s; }
     .settings-toggle:hover { color:var(--accent); background:rgba(var(--accent-rgb),0.1); transform:rotate(30deg); }
     .settings-toggle.open { color:var(--accent); background:rgba(var(--accent-rgb),0.12); transform:rotate(60deg); }
-    .model-badge { display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--muted); background:var(--surface2); border:1px solid var(--border); padding:5px 12px; border-radius:999px; transition:background 0.5s,border-color 0.5s,color 0.5s; }
-    .model-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2.5s ease-in-out infinite; transition:background 0.5s; }
+
+    /* Model selector pill */
+    .model-select-wrap { position:relative; }
+    .model-badge { display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--text); background:var(--surface2); border:1px solid var(--border); padding:5px 10px 5px 12px; border-radius:999px; cursor:pointer; transition:background 0.3s,border-color 0.5s,color 0.5s; user-select:none; }
+    .model-badge:hover { border-color:rgba(var(--accent-rgb),0.4); background:rgba(var(--accent-rgb),0.08); }
+    .model-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2.5s ease-in-out infinite; transition:background 0.5s; flex-shrink:0; }
     @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(var(--accent-rgb),0.4);} 50%{opacity:0.5;box-shadow:0 0 0 4px rgba(var(--accent-rgb),0);} }
+    .model-badge .caret { width:10px; height:10px; transition:transform 0.3s; opacity:0.6; }
+    .model-badge.open .caret { transform:rotate(180deg); }
+    .model-menu { position:absolute; top:calc(100% + 8px); right:0; min-width:240px; background:var(--settings-card); border:1px solid var(--border); border-radius:14px; padding:6px; box-shadow:0 12px 40px rgba(0,0,0,0.18); z-index:50; opacity:0; transform:translateY(-8px) scale(0.97); pointer-events:none; transition:opacity 0.22s,transform 0.22s; transform-origin:top right; }
+    .model-menu.open { opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+    .model-option { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 11px; border-radius:9px; cursor:pointer; transition:background 0.18s; }
+    .model-option:hover { background:rgba(var(--accent-rgb),0.1); }
+    .model-option.active { background:rgba(var(--accent-rgb),0.14); }
+    .model-option-main { display:flex; flex-direction:column; gap:2px; }
+    .model-option-name { font-size:0.84rem; font-weight:600; color:var(--text); }
+    .model-option-meta { font-size:0.66rem; color:var(--muted); letter-spacing:0.02em; }
+    .model-option-check { color:var(--accent); opacity:0; transition:opacity 0.18s; flex-shrink:0; }
+    .model-option.active .model-option-check { opacity:1; }
+    .model-group-label { font-size:0.6rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); padding:8px 11px 4px; }
 
     .settings-panel { position:absolute; top:0; left:0; right:0; bottom:0; background:var(--settings-bg); z-index:20; display:flex; flex-direction:column; transform:translateX(100%); opacity:0; transition:transform 0.5s cubic-bezier(0.34,1.2,0.64,1),opacity 0.3s ease; pointer-events:none; overflow-y:auto; }
     .settings-panel.open { transform:translateX(0); opacity:1; pointer-events:all; }
@@ -101,7 +118,7 @@
     .settings-close:hover { color:var(--accent2); background:rgba(244,114,182,0.1); }
     .settings-body { padding:28px 24px; display:flex; flex-direction:column; gap:24px; flex:1; }
     .settings-section { display:flex; flex-direction:column; gap:10px; animation:fadeUp 0.5s ease both; }
-    .settings-section:nth-child(2){animation-delay:0.1s;} .settings-section:nth-child(3){animation-delay:0.2s;} .settings-section:nth-child(4){animation-delay:0.3s;}
+    .settings-section:nth-child(2){animation-delay:0.1s;} .settings-section:nth-child(3){animation-delay:0.2s;} .settings-section:nth-child(4){animation-delay:0.3s;} .settings-section:nth-child(5){animation-delay:0.4s;}
     .settings-label { font-size:0.7rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); transition:color 0.5s; }
     .settings-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; transition:color 0.5s; }
     .settings-card { background:var(--settings-card); border:1px solid var(--border); border-radius:14px; padding:16px; transition:background 0.5s,border-color 0.5s; }
@@ -128,6 +145,28 @@
     .theme-tile[data-t="rosepine"]{background:rgba(235,111,146,0.08);border-color:rgba(235,111,146,0.18);}
     .theme-tile[data-t="white"]{background:rgba(200,200,210,0.15);border-color:rgba(180,180,200,0.25);}
     .theme-tile[data-t="reset"]{background:rgba(120,120,140,0.08);border-color:rgba(120,120,140,0.15);}
+
+    /* Usage / rate-limit tracker */
+    .usage-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .usage-card { background:var(--settings-card); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:8px; transition:background 0.5s,border-color 0.5s; }
+    .usage-head { display:flex; align-items:center; justify-content:space-between; }
+    .usage-key { font-size:0.62rem; font-weight:700; letter-spacing:0.12em; color:var(--accent); }
+    .usage-vals { display:flex; align-items:baseline; gap:5px; }
+    .usage-current { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; line-height:1; color:var(--text); }
+    .usage-limit { font-size:0.72rem; color:var(--muted); }
+    .usage-bar { height:5px; border-radius:99px; background:var(--surface); overflow:hidden; }
+    .usage-fill { height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 0.5s cubic-bezier(0.34,1.2,0.64,1),background 0.4s; }
+    .usage-fill.warn { background:linear-gradient(90deg,#f6c177,#eb6f92); }
+    .usage-fill.danger { background:linear-gradient(90deg,#eb6f92,#ff4d6d); }
+    .usage-sub { font-size:0.6rem; color:var(--muted); }
+    .usage-note { font-size:0.7rem; color:var(--muted); line-height:1.5; display:flex; gap:6px; align-items:flex-start; }
+    .usage-reset-btn { padding:9px 14px; border-radius:10px; border:1px solid var(--border); cursor:pointer; background:var(--surface2); color:var(--muted); font-family:'Outfit',sans-serif; font-size:0.82rem; transition:color 0.2s,border-color 0.2s; }
+    .usage-reset-btn:hover { color:var(--accent2); border-color:var(--accent2); }
+
+    /* mini usage strip in header on small screens hidden; shown in model menu footer */
+    .model-menu-footer { border-top:1px solid var(--border); margin-top:6px; padding:9px 11px 5px; display:flex; flex-direction:column; gap:6px; }
+    .mini-usage-row { display:flex; justify-content:space-between; font-size:0.66rem; color:var(--muted); }
+    .mini-usage-row b { color:var(--text); font-weight:600; }
 
     #messages { overflow-y:auto; padding:28px 0 16px; display:flex; flex-direction:column; gap:20px; }
     #messages::-webkit-scrollbar { width:3px; }
@@ -167,6 +206,8 @@
     .bubble ul li{list-style:disc;} .bubble ol li{list-style:decimal;}
     .bubble blockquote{border-left:3px solid var(--accent);padding:4px 12px;margin:8px 0;color:var(--muted);font-style:italic;background:rgba(var(--accent-rgb),0.04);border-radius:0 6px 6px 0;transition:border-color 0.5s,background 0.5s;}
     .bubble hr{border:none;border-top:1px solid var(--border);margin:10px 0;}
+    .msg-meta { font-size:0.6rem; color:var(--muted); padding:0 4px; display:flex; gap:8px; align-items:center; }
+    .msg-meta .meta-model { color:var(--accent); font-weight:600; }
     .image-attachment{border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:300px;transition:border-color 0.5s;}
     .image-attachment img{width:100%;height:auto;display:block;border-radius:8px;}
     .msg-row.user .image-attachment{border-color:rgba(var(--accent-rgb),0.25);}
@@ -201,11 +242,14 @@
     #send-btn:active{transform:scale(0.95);}
     #send-btn:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none;}
     #send-btn svg{width:17px;height:17px;fill:var(--bg);}
-    .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;}
+    .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;flex-wrap:wrap;gap:6px;}
     .input-footer span{font-size:0.67rem;color:var(--muted);transition:color 0.5s;}
+    .footer-usage{font-size:0.67rem;color:var(--muted);display:flex;gap:10px;}
+    .footer-usage b{color:var(--accent);font-weight:600;}
     .clear-btn{font-size:0.67rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color 0.2s;}
     .clear-btn:hover{color:var(--accent2);}
     #file-input{display:none;}
+    @media(max-width:560px){ .model-option-meta{display:none;} .palette-switcher{display:none;} }
   </style>
 </head>
 <body>
@@ -246,6 +290,42 @@
           <div class="theme-tile" data-t="reset"><div class="theme-dot-large" style="background:#000000;"></div><span class="theme-tile-label" style="color:var(--muted);">Black</span></div>
         </div>
       </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Active Model</div>
+        <div class="settings-desc">Pick which model handles your requests. Each model has its own rate limits (RPM / TPM / RPD).</div>
+        <div class="settings-card" id="settingsModelList"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Usage &amp; Rate Limits</div>
+        <div class="settings-desc">Live counters for the <b id="usageModelName">active model</b>, tracked across all devices via the shared usage table.</div>
+        <div class="usage-grid">
+          <div class="usage-card">
+            <div class="usage-head"><span class="usage-key">RPM</span></div>
+            <div class="usage-vals"><span class="usage-current" id="rpmCurrent">0</span><span class="usage-limit" id="rpmLimit">/ 0</span></div>
+            <div class="usage-bar"><div class="usage-fill" id="rpmFill"></div></div>
+            <div class="usage-sub">requests this minute</div>
+          </div>
+          <div class="usage-card">
+            <div class="usage-head"><span class="usage-key">TPM</span></div>
+            <div class="usage-vals"><span class="usage-current" id="tpmCurrent">0</span><span class="usage-limit" id="tpmLimit">/ 0</span></div>
+            <div class="usage-bar"><div class="usage-fill" id="tpmFill"></div></div>
+            <div class="usage-sub">tokens this minute</div>
+          </div>
+          <div class="usage-card">
+            <div class="usage-head"><span class="usage-key">RPD</span></div>
+            <div class="usage-vals"><span class="usage-current" id="rpdCurrent">0</span><span class="usage-limit" id="rpdLimit">/ 0</span></div>
+            <div class="usage-bar"><div class="usage-fill" id="rpdFill"></div></div>
+            <div class="usage-sub">requests today</div>
+          </div>
+        </div>
+        <div class="usage-note">↺ <span>RPM &amp; TPM reset every 60s. RPD resets at midnight UTC. Counts are shared across devices via a backend table, so the total reflects everyone's usage.</span></div>
+        <div class="settings-btn-row">
+          <button class="usage-reset-btn" id="resetUsageBtn" style="flex:1;">Reset This Model's Counters</button>
+        </div>
+      </div>
+
       <div class="settings-section">
         <div class="settings-label">System Prompt</div>
         <div class="settings-desc">Customize how the AI behaves. This is sent before every conversation.</div>
@@ -259,6 +339,7 @@
         </div>
         <div class="save-toast" id="saveToast">✦ System prompt saved successfully!</div>
       </div>
+
       <div class="settings-section">
         <div class="settings-label">Danger Zone</div>
         <div class="settings-desc">Permanently clear your current conversation history.</div>
@@ -291,9 +372,13 @@
           <button class="palette-btn active" data-p="white" title="White"></button>
           <button class="palette-btn" data-p="reset" title="Black"></button>
         </div>
-        <div class="model-badge">
-          <span class="model-dot"></span>
-          <span>gemini-2.5-flash</span>
+        <div class="model-select-wrap">
+          <div class="model-badge" id="modelBadge" title="Select model">
+            <span class="model-dot"></span>
+            <span id="modelBadgeName">gemini-2.5-flash</span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="model-menu" id="modelMenu"></div>
         </div>
         <button class="settings-toggle" id="settingsToggle" title="Settings">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -346,6 +431,11 @@
       </div>
       <div class="input-footer">
         <span>Enter to send · Shift+Enter for new line · Paste images</span>
+        <div class="footer-usage" id="footerUsage">
+          <span>RPM <b id="fRpm">0</b></span>
+          <span>TPM <b id="fTpm">0</b></span>
+          <span>RPD <b id="fRpd">0</b></span>
+        </div>
         <button class="clear-btn" onclick="clearChat()">clear chat</button>
       </div>
     </div>
@@ -355,10 +445,132 @@
 <input type="file" id="file-input" accept="image/*" multiple />
 
 <script>
+  /* ============================================================
+     MODEL DEFINITIONS
+     apiId  -> the value sent to your /api/chat proxy ("model")
+     Rate-limit numbers are reference free-tier values; adjust
+     freely to match your actual Google AI Studio / Vertex tier.
+     ============================================================ */
+  const MODELS = [
+    { id:"gemini-2.5-flash",        name:"Gemini 2.5 Flash",       group:"Gemini", rpm:10,  tpm:250000,  rpd:250  },
+    { id:"gemini-3-flash",          name:"Gemini 3 Flash",         group:"Gemini", rpm:10,  tpm:250000,  rpd:250  },
+    { id:"gemini-3.1-flash-lite",   name:"Gemini 3.1 Flash Lite",  group:"Gemini", rpm:15,  tpm:250000,  rpd:1000 },
+    { id:"gemini-2.5-flash-lite",   name:"Gemini 2.5 Flash Lite",  group:"Gemini", rpm:15,  tpm:250000,  rpd:1000 },
+    { id:"gemma-4-26b",             name:"Gemma 4 26B",            group:"Gemma",  rpm:30,  tpm:15000,   rpd:14400 },
+    { id:"gemma-4-31b",             name:"Gemma 4 31B",            group:"Gemma",  rpm:30,  tpm:15000,   rpd:14400 }
+  ];
+  function getModel(id){ return MODELS.find(m => m.id === id) || MODELS[0]; }
+
   const DEFAULT_PROMPT = "You are an AI to help students do their work, answer questions, and to be smart. Take your time when the question is complex. Answer all their questions.";
   let SYSTEM_PROMPT = DEFAULT_PROMPT;
   let history = [], isLoading = false, attachedImages = [];
+  let activeModelId = MODELS[0].id;
 
+  /* ---------- token estimation (≈4 chars/token; +258/image) ---------- */
+  function estimateTokens(parts){
+    let tokens = 0;
+    for(const p of parts){
+      if(p.text) tokens += Math.ceil(p.text.length / 4);
+      if(p.inlineData) tokens += 258;
+    }
+    return Math.max(1, tokens);
+  }
+
+  /* ============================================================
+     SHARED CROSS-DEVICE USAGE  (RESTful Table API)
+     Table "usage" — one row per model. Fields:
+       model (text/id-ish), rpm_count, rpm_window (ms),
+       tpm_count, rpd_count, rpd_day (YYYY-MM-DD UTC)
+     We use model id as the record id where possible; otherwise
+     we look it up. Falls back to localStorage if API unavailable.
+     ============================================================ */
+  const USAGE_TABLE = "usage";
+  let usageCache = {};        // modelId -> usage object (+ _recordId)
+  let apiAvailable = true;
+
+  function todayUTC(){ return new Date().toISOString().slice(0,10); }
+  function nowMs(){ return Date.now(); }
+
+  function freshUsage(modelId){
+    return { model:modelId, rpm_count:0, rpm_window:nowMs(), tpm_count:0, rpd_count:0, rpd_day:todayUTC() };
+  }
+
+  /* Normalise time-based windows (minute + day rollover) */
+  function rollWindows(u){
+    const t = nowMs();
+    if(t - (u.rpm_window||0) >= 60000){ u.rpm_count = 0; u.tpm_count = 0; u.rpm_window = t; }
+    if(u.rpd_day !== todayUTC()){ u.rpd_count = 0; u.rpd_day = todayUTC(); }
+    return u;
+  }
+
+  async function fetchUsage(modelId){
+    // Try the shared table first
+    if(apiAvailable){
+      try{
+        const r = await fetch(`tables/${USAGE_TABLE}?search=${encodeURIComponent(modelId)}&limit=50`);
+        if(r.ok){
+          const j = await r.json();
+          const row = (j.data||[]).find(x => x.model === modelId);
+          if(row){ const u = rollWindows(row); usageCache[modelId] = u; return u; }
+          // create a new row
+          const created = await fetch(`tables/${USAGE_TABLE}`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(freshUsage(modelId))
+          });
+          if(created.ok){ const c = await created.json(); usageCache[modelId] = c; return c; }
+        } else { apiAvailable = false; }
+      }catch(e){ apiAvailable = false; }
+    }
+    // localStorage fallback (per-device)
+    return fetchUsageLocal(modelId);
+  }
+
+  function fetchUsageLocal(modelId){
+    let u;
+    try{ u = JSON.parse(localStorage.getItem("usage_"+modelId)); }catch(e){ u = null; }
+    if(!u) u = freshUsage(modelId);
+    u = rollWindows(u);
+    usageCache[modelId] = u;
+    return u;
+  }
+
+  async function persistUsage(modelId){
+    const u = usageCache[modelId];
+    if(!u) return;
+    if(apiAvailable && u.id){
+      try{
+        await fetch(`tables/${USAGE_TABLE}/${u.id}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ rpm_count:u.rpm_count, rpm_window:u.rpm_window, tpm_count:u.tpm_count, rpd_count:u.rpd_count, rpd_day:u.rpd_day })
+        });
+        return;
+      }catch(e){ apiAvailable = false; }
+    }
+    try{ localStorage.setItem("usage_"+modelId, JSON.stringify(u)); }catch(e){}
+  }
+
+  /* Increment counters after a successful request */
+  async function recordUsage(modelId, tokens){
+    let u = usageCache[modelId] || await fetchUsage(modelId);
+    u = rollWindows(u);
+    u.rpm_count += 1;
+    u.tpm_count += tokens;
+    u.rpd_count += 1;
+    usageCache[modelId] = u;
+    await persistUsage(modelId);
+    renderUsage();
+  }
+
+  async function resetUsage(modelId){
+    let u = usageCache[modelId] || await fetchUsage(modelId);
+    u.rpm_count = 0; u.tpm_count = 0; u.rpd_count = 0;
+    u.rpm_window = nowMs(); u.rpd_day = todayUTC();
+    usageCache[modelId] = u;
+    await persistUsage(modelId);
+    renderUsage();
+  }
+
+  /* ---------- DOM ---------- */
   const messagesEl = document.getElementById('messages');
   const messagesInner = document.getElementById('messagesInner');
   const msgInput = document.getElementById('msg-input');
@@ -373,9 +585,120 @@
   const promptTextarea = document.getElementById('prompt-textarea');
   const charCount = document.getElementById('charCount');
   const saveToast = document.getElementById('saveToast');
+  const modelBadge = document.getElementById('modelBadge');
+  const modelMenu = document.getElementById('modelMenu');
+  const modelBadgeName = document.getElementById('modelBadgeName');
   let toastTimer;
 
-  function openSettings() { promptTextarea.value = SYSTEM_PROMPT; charCount.textContent = SYSTEM_PROMPT.length; settingsPanel.classList.add('open'); settingsToggle.classList.add('open'); }
+  /* ---------- Model menu rendering ---------- */
+  function buildModelMenu(){
+    let html = '';
+    let lastGroup = null;
+    for(const m of MODELS){
+      if(m.group !== lastGroup){ html += `<div class="model-group-label">${m.group}</div>`; lastGroup = m.group; }
+      html += `
+        <div class="model-option ${m.id===activeModelId?'active':''}" data-model="${m.id}">
+          <div class="model-option-main">
+            <span class="model-option-name">${m.name}</span>
+            <span class="model-option-meta">${m.rpm} RPM · ${(m.tpm/1000)}k TPM · ${m.rpd} RPD</span>
+          </div>
+          <svg class="model-option-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>`;
+    }
+    html += `
+      <div class="model-menu-footer">
+        <div class="mini-usage-row"><span>RPM (this min)</span><b id="mmRpm">0 / 0</b></div>
+        <div class="mini-usage-row"><span>TPM (this min)</span><b id="mmTpm">0 / 0</b></div>
+        <div class="mini-usage-row"><span>RPD (today)</span><b id="mmRpd">0 / 0</b></div>
+      </div>`;
+    modelMenu.innerHTML = html;
+    modelMenu.querySelectorAll('.model-option').forEach(opt=>{
+      opt.addEventListener('click', ()=> selectModel(opt.dataset.model));
+    });
+  }
+
+  function buildSettingsModelList(){
+    const el = document.getElementById('settingsModelList');
+    let html = '';
+    let lastGroup = null;
+    for(const m of MODELS){
+      if(m.group !== lastGroup){ html += `<div class="model-group-label">${m.group}</div>`; lastGroup = m.group; }
+      html += `
+        <div class="model-option ${m.id===activeModelId?'active':''}" data-model="${m.id}">
+          <div class="model-option-main">
+            <span class="model-option-name">${m.name}</span>
+            <span class="model-option-meta">${m.rpm} RPM · ${(m.tpm/1000)}k TPM · ${m.rpd} RPD</span>
+          </div>
+          <svg class="model-option-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>`;
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.model-option').forEach(opt=>{
+      opt.addEventListener('click', ()=> selectModel(opt.dataset.model));
+    });
+  }
+
+  async function selectModel(id){
+    activeModelId = id;
+    const m = getModel(id);
+    modelBadgeName.textContent = m.id;
+    document.getElementById('usageModelName').textContent = m.name;
+    buildModelMenu(); buildSettingsModelList();
+    closeModelMenu();
+    try{ localStorage.setItem('activeModel', id); }catch(e){}
+    await fetchUsage(id);
+    renderUsage();
+  }
+
+  function openModelMenu(){ modelMenu.classList.add('open'); modelBadge.classList.add('open'); }
+  function closeModelMenu(){ modelMenu.classList.remove('open'); modelBadge.classList.remove('open'); }
+  modelBadge.addEventListener('click', e=>{ e.stopPropagation(); modelMenu.classList.contains('open') ? closeModelMenu() : openModelMenu(); });
+  document.addEventListener('click', e=>{ if(!e.target.closest('.model-select-wrap')) closeModelMenu(); });
+
+  /* ---------- Usage rendering ---------- */
+  function fillClass(pct){ return pct >= 90 ? 'usage-fill danger' : pct >= 70 ? 'usage-fill warn' : 'usage-fill'; }
+  function renderUsage(){
+    const m = getModel(activeModelId);
+    let u = usageCache[activeModelId];
+    if(!u){ u = freshUsage(activeModelId); usageCache[activeModelId] = u; }
+    u = rollWindows(u);
+
+    const rpmPct = Math.min(100, (u.rpm_count / m.rpm) * 100);
+    const tpmPct = Math.min(100, (u.tpm_count / m.tpm) * 100);
+    const rpdPct = Math.min(100, (u.rpd_count / m.rpd) * 100);
+
+    // Settings panel cards
+    document.getElementById('rpmCurrent').textContent = u.rpm_count;
+    document.getElementById('rpmLimit').textContent = '/ ' + m.rpm;
+    document.getElementById('tpmCurrent').textContent = u.tpm_count.toLocaleString();
+    document.getElementById('tpmLimit').textContent = '/ ' + m.tpm.toLocaleString();
+    document.getElementById('rpdCurrent').textContent = u.rpd_count;
+    document.getElementById('rpdLimit').textContent = '/ ' + m.rpd;
+    const rf=document.getElementById('rpmFill'), tf=document.getElementById('tpmFill'), df=document.getElementById('rpdFill');
+    rf.className = fillClass(rpmPct); rf.style.width = rpmPct + '%';
+    tf.className = fillClass(tpmPct); tf.style.width = tpmPct + '%';
+    df.className = fillClass(rpdPct); df.style.width = rpdPct + '%';
+
+    // Footer strip
+    document.getElementById('fRpm').textContent = `${u.rpm_count}/${m.rpm}`;
+    document.getElementById('fTpm').textContent = `${u.tpm_count.toLocaleString()}/${(m.tpm/1000)}k`;
+    document.getElementById('fRpd').textContent = `${u.rpd_count}/${m.rpd}`;
+
+    // Model menu footer (if present)
+    const mmR=document.getElementById('mmRpm'), mmT=document.getElementById('mmTpm'), mmD=document.getElementById('mmRpd');
+    if(mmR) mmR.textContent = `${u.rpm_count} / ${m.rpm}`;
+    if(mmT) mmT.textContent = `${u.tpm_count.toLocaleString()} / ${m.tpm.toLocaleString()}`;
+    if(mmD) mmD.textContent = `${u.rpd_count} / ${m.rpd}`;
+  }
+
+  /* Refresh usage from the shared table periodically + roll windows */
+  setInterval(async ()=>{ await fetchUsage(activeModelId); renderUsage(); }, 15000);
+  setInterval(renderUsage, 1000); // local window roll-over visual
+
+  document.getElementById('resetUsageBtn').addEventListener('click', ()=> resetUsage(activeModelId));
+
+  /* ---------- Settings panel ---------- */
+  function openSettings() { promptTextarea.value = SYSTEM_PROMPT; charCount.textContent = SYSTEM_PROMPT.length; renderUsage(); settingsPanel.classList.add('open'); settingsToggle.classList.add('open'); }
   function closeSettings() { settingsPanel.classList.remove('open'); settingsToggle.classList.remove('open'); }
   settingsToggle.addEventListener('click', () => settingsPanel.classList.contains('open') ? closeSettings() : openSettings());
   settingsClose.addEventListener('click', closeSettings);
@@ -384,11 +707,13 @@
   document.getElementById('resetPromptBtn').addEventListener('click', () => { SYSTEM_PROMPT = DEFAULT_PROMPT; promptTextarea.value = DEFAULT_PROMPT; charCount.textContent = DEFAULT_PROMPT.length; saveToast.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => saveToast.classList.remove('visible'), 3000); });
   document.getElementById('clearFromSettings').addEventListener('click', () => { clearChat(); closeSettings(); });
 
+  /* ---------- Themes ---------- */
   const themeMap = { violet:'violet', cyborg:'cyborg', ice:'ice', rosepine:'rosepine', white:'', reset:'black' };
   function applyTheme(p) { document.documentElement.dataset.theme = themeMap[p]; document.querySelectorAll('.palette-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p)); document.querySelectorAll('.theme-tile').forEach(t => t.classList.toggle('active', t.dataset.t === p)); }
   document.querySelectorAll('.palette-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.p)));
   document.querySelectorAll('.theme-tile').forEach(tile => tile.addEventListener('click', () => applyTheme(tile.dataset.t)));
 
+  /* ---------- Markdown ---------- */
   function renderMarkdown(text) {
     function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     const cb=[],ic=[];
@@ -406,6 +731,7 @@
     return text;
   }
 
+  /* ---------- Compose ---------- */
   function autoResize(){msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px';}
   msgInput.addEventListener('input',autoResize);
   msgInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
@@ -423,14 +749,15 @@
   function useChip(el){msgInput.value=el.textContent;autoResize();sendMessage();}
   function removeWelcome(){document.getElementById('welcome')?.remove();}
 
-  function appendRow(role,text,images=[]){
+  function appendRow(role,text,images=[],modelName=null){
     removeWelcome();
     const row=document.createElement('div');
     row.className=`msg-row ${role}`;
     const imagesHtml=images.map(s=>`<div class="image-attachment"><img src="${s}" alt="Image"/></div>`).join('');
     let bubbleHtml='';
     if(text){const content=role==='user'?text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):renderMarkdown(text);bubbleHtml=`<div class="bubble">${content}</div>`;}
-    row.innerHTML=`<div class="msg-label">${role==='user'?'you':'gemini ai'}</div><div class="msg-content">${imagesHtml}${bubbleHtml}</div>`;
+    const metaHtml = (role==='ai' && modelName) ? `<div class="msg-meta"><span class="meta-model">${modelName}</span></div>` : '';
+    row.innerHTML=`<div class="msg-label">${role==='user'?'you':'gemini ai'}</div><div class="msg-content">${imagesHtml}${bubbleHtml}${metaHtml}</div>`;
     messagesInner.appendChild(row);
     messagesEl.scrollTop=messagesEl.scrollHeight;
     return row;
@@ -446,9 +773,19 @@
   function removeTyping(){document.getElementById('typing-row')?.remove();}
   function appendError(msg){const div=document.createElement('div');div.className='error-bubble';div.textContent='⚠ '+msg;messagesInner.appendChild(div);messagesEl.scrollTop=messagesEl.scrollHeight;}
 
+  /* ---------- Send ---------- */
   async function sendMessage(){
     const text=msgInput.value.trim();
     if((!text&&attachedImages.length===0)||isLoading)return;
+
+    const model = getModel(activeModelId);
+
+    // Client-side rate-limit guard (shared usage)
+    let u = await fetchUsage(activeModelId);
+    u = rollWindows(u);
+    if(u.rpm_count >= model.rpm){ appendError(`Rate limit reached: ${model.name} allows ${model.rpm} requests/minute. Try again shortly.`); return; }
+    if(u.rpd_count >= model.rpd){ appendError(`Daily limit reached: ${model.name} allows ${model.rpd} requests/day.`); return; }
+
     isLoading=true;sendBtn.disabled=true;attachBtn.disabled=true;
     msgInput.value='';msgInput.style.height='auto';
     const imageDataUrls=attachedImages.map(i=>i.base64);
@@ -457,15 +794,35 @@
     for(let img of attachedImages)userMessage.parts.push({inlineData:{mimeType:img.type,data:img.base64.split(',')[1]}});
     if(text)userMessage.parts.push({text});
     history.push(userMessage);
+    const promptTokens = estimateTokens(userMessage.parts) + Math.ceil(SYSTEM_PROMPT.length/4);
     attachedImages=[];renderImagePreviews();
     appendTyping();
+
     try{
-      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:SYSTEM_PROMPT}]},contents:history,generationConfig:{temperature:0.8,topP:0.95,topK:40,maxOutputTokens:1024}})});
+      const response=await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model: model.id,                       // <-- selected model sent to proxy
+          systemInstruction:{parts:[{text:SYSTEM_PROMPT}]},
+          contents:history,
+          generationConfig:{temperature:0.8,topP:0.95,topK:40,maxOutputTokens:1024}
+        })
+      });
       const data=await response.json();
       if(!response.ok)throw new Error(data.error?.message||`HTTP ${response.status}`);
       const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||"(no response)";
       history.push({role:"model",parts:[{text:reply}]});
-      removeTyping();appendRow('ai',reply);
+
+      // Token accounting: prefer real usageMetadata if proxy returns it
+      let usedTokens;
+      const um = data.usageMetadata;
+      if(um && (um.totalTokenCount!=null)) usedTokens = um.totalTokenCount;
+      else usedTokens = promptTokens + estimateTokens([{text:reply}]);
+
+      await recordUsage(activeModelId, usedTokens);
+
+      removeTyping();appendRow('ai',reply,[],model.name);
     }catch(err){
       console.error(err);removeTyping();appendError(err.message||"Something went wrong.");
     }finally{
@@ -495,8 +852,18 @@
       </div>`;
   }
 
-  promptTextarea.value = DEFAULT_PROMPT;
-  charCount.textContent = DEFAULT_PROMPT.length;
+  /* ---------- Init ---------- */
+  (async function init(){
+    try{ const saved = localStorage.getItem('activeModel'); if(saved && getModel(saved).id===saved) activeModelId = saved; }catch(e){}
+    const m = getModel(activeModelId);
+    modelBadgeName.textContent = m.id;
+    document.getElementById('usageModelName').textContent = m.name;
+    buildModelMenu(); buildSettingsModelList();
+    promptTextarea.value = DEFAULT_PROMPT;
+    charCount.textContent = DEFAULT_PROMPT.length;
+    await fetchUsage(activeModelId);
+    renderUsage();
+  })();
 </script>
 </body>
 </html>
