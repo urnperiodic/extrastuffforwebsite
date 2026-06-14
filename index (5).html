@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gemini AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --surface: #f5f5f7; --surface2: #ebebed; --border: rgba(0,0,0,0.08);
+      --accent: #6366f1; --accent-rgb: 99,102,241; --accent2: #ec4899; --text: #111118;
+      --muted: #888899; --user-bubble: #f0f0ff; --ai-bubble: #f8f8fa; --glow: rgba(99,102,241,0.05);
+      --input-bg: rgba(255,255,255,0.9); --header-bg: rgba(255,255,255,0.85);
+      --settings-bg: #f5f5f7; --settings-card: #ebebed; --scanline-color: rgba(0,0,0,0.003);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05); --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+    [data-theme="violet"] { --bg:#0e0b14; --surface:#16122a; --surface2:#1c1736; --border:rgba(160,120,255,0.12); --accent:#a78bfa; --accent-rgb:167,139,250; --accent2:#f472b6; --text:#ede9f6; --muted:#8b7fae; --user-bubble:#1a1530; --ai-bubble:#130e24; --glow:rgba(167,139,250,0.10); --input-bg:rgba(0,0,0,0.15); --header-bg:rgba(14,11,20,0.7); --settings-bg:#16122a; --settings-card:#1c1736; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.4); }
+    [data-theme="cyborg"] { --bg:#050a0e; --surface:#0a1628; --surface2:#0f1f38; --border:rgba(0,200,255,0.12); --accent:#00c8ff; --accent-rgb:0,200,255; --accent2:#ff4d6d; --text:#e0f4ff; --muted:#5a7a90; --user-bubble:#0a1e30; --ai-bubble:#050e18; --glow:rgba(0,200,255,0.09); --input-bg:rgba(0,0,0,0.15); --header-bg:rgba(5,10,14,0.7); --settings-bg:#0a1628; --settings-card:#0f1f38; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.5); }
+    [data-theme="ice"] { --bg:#f0f6ff; --surface:#dce8fb; --surface2:#c8dafc; --border:rgba(80,130,220,0.15); --accent:#3b82f6; --accent-rgb:59,130,246; --accent2:#ec4899; --text:#1e2a40; --muted:#6a8ab0; --user-bubble:#dce8fc; --ai-bubble:#e8f1ff; --glow:rgba(59,130,246,0.07); --input-bg:rgba(255,255,255,0.6); --header-bg:rgba(240,246,255,0.8); --settings-bg:#dce8fb; --settings-card:#c8dafc; --scanline-color:rgba(0,0,0,0.004); }
+    [data-theme="rosepine"] { --bg:#191724; --surface:#1f1d2e; --surface2:#26233a; --border:rgba(235,188,186,0.1); --accent:#eb6f92; --accent-rgb:235,111,146; --accent2:#f6c177; --text:#e0def4; --muted:#8a849e; --user-bubble:#26233a; --ai-bubble:#1f1d2e; --glow:rgba(235,111,146,0.09); --input-bg:rgba(0,0,0,0.15); --header-bg:rgba(25,23,36,0.7); --settings-bg:#1f1d2e; --settings-card:#26233a; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.4); }
+    [data-theme="black"] { --bg:#000000; --surface:#1a1a1a; --surface2:#2d2d2d; --border:rgba(255,255,255,0.1); --accent:#e5e5e5; --accent-rgb:229,229,229; --accent2:#ff6b9d; --text:#ffffff; --muted:#999999; --user-bubble:#1a1a1a; --ai-bubble:#0f0f0f; --glow:rgba(229,229,229,0.06); --input-bg:rgba(255,255,255,0.05); --header-bg:rgba(0,0,0,0.5); --settings-bg:#1a1a1a; --settings-card:#2d2d2d; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.6); }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; overflow: hidden; transition: background 0.5s, color 0.5s; }
+    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scanline-color) 2px,var(--scanline-color) 4px); pointer-events:none; z-index:0; }
+
+    .glow-orb { position:fixed; border-radius:50%; pointer-events:none; z-index:0; background:radial-gradient(circle,var(--glow) 0%,transparent 70%); }
+    .glow-orb.orb1 { width:600px; height:600px; bottom:-150px; left:-150px; animation:drift1 12s ease-in-out infinite alternate; }
+    .glow-orb.orb2 { width:400px; height:400px; top:-100px; right:-100px; animation:drift2 15s ease-in-out infinite alternate; }
+    @keyframes drift1 { from{transform:translate(0,0) scale(1);} to{transform:translate(60px,-60px) scale(1.15);} }
+    @keyframes drift2 { from{transform:translate(0,0) scale(1);} to{transform:translate(-40px,50px) scale(1.1);} }
+
+    .app { position:relative; z-index:1; display:grid; grid-template-rows:auto 1fr auto; height:100vh; width:100%; }
+
+    header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 24px; border-bottom:1px solid var(--border);
+      background:var(--header-bg); backdrop-filter:blur(20px);
+      animation:slideDown 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+      transition:background 0.5s,border-color 0.5s; z-index:10; width:100%;
+    }
+    .header-inner { max-width:820px; margin:0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-20px);} to{opacity:1;transform:translateY(0);} }
+
+    .wordmark { display:flex; align-items:center; gap:10px; }
+    .wordmark-icon { width:34px; height:34px; border-radius:11px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.3),rgba(var(--accent-rgb),0.1)); border:1px solid rgba(var(--accent-rgb),0.3); display:flex; align-items:center; justify-content:center; animation:containerIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s both, containerPulse 4s ease-in-out infinite 1s; transition:background 0.5s,border-color 0.5s,transform 0.3s; position:relative; overflow:hidden; cursor:pointer; }
+    .wordmark-icon::before { content:''; position:absolute; inset:-2px; background:conic-gradient(from 0deg,transparent 0deg,rgba(var(--accent-rgb),0.6) 60deg,transparent 120deg,transparent 240deg,rgba(var(--accent-rgb),0.4) 300deg,transparent 360deg); animation:conicSpin 4s linear infinite; opacity:0.7; z-index:0; }
+    .wordmark-icon::after { content:''; position:absolute; inset:2px; border-radius:9px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.3),rgba(var(--accent-rgb),0.1)); z-index:1; }
+    .wordmark-icon:hover { transform:scale(1.1) rotate(-5deg); }
+    @keyframes containerIn { from{opacity:0;transform:rotate(-90deg) scale(0.3);} to{opacity:1;transform:rotate(0) scale(1);} }
+    @keyframes containerPulse { 0%,100%{box-shadow:0 0 0 0 rgba(var(--accent-rgb),0.0);} 50%{box-shadow:0 0 20px 2px rgba(var(--accent-rgb),0.35);} }
+    @keyframes conicSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+    .gemini-logo-svg { position:relative; z-index:2; width:19px; height:19px; animation:logoSpin 6s cubic-bezier(0.65,0,0.35,1) infinite, logoBreathe 3s ease-in-out infinite; transform-origin:center; filter:drop-shadow(0 0 4px rgba(var(--accent-rgb),0.6)); }
+    .gemini-logo-svg path { fill:url(#geminiGradHeader); }
+    @keyframes logoSpin { 0%{transform:rotate(0deg);} 40%{transform:rotate(180deg);} 50%{transform:rotate(180deg);} 90%{transform:rotate(360deg);} 100%{transform:rotate(360deg);} }
+    @keyframes logoBreathe { 0%,100%{filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),0.5)) brightness(1);} 50%{filter:drop-shadow(0 0 10px rgba(var(--accent-rgb),0.9)) brightness(1.25);} }
+
+    .welcome-icon { width:84px; height:84px; border-radius:26px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.2),rgba(var(--accent-rgb),0.05)); border:1px solid rgba(var(--accent-rgb),0.25); display:flex; align-items:center; justify-content:center; animation:welcomePop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.2s both, welcomeFloat 5s ease-in-out infinite 1s, welcomeGlow 4s ease-in-out infinite 1s; position:relative; overflow:hidden; }
+    .welcome-icon::before { content:''; position:absolute; inset:-3px; background:conic-gradient(from 0deg,transparent 0deg,rgba(var(--accent-rgb),0.7) 50deg,transparent 120deg,rgba(244,114,182,0.5) 180deg,transparent 240deg,rgba(var(--accent-rgb),0.6) 310deg,transparent 360deg); animation:conicSpinLarge 5s linear infinite; z-index:0; }
+    .welcome-icon::after { content:''; position:absolute; inset:2px; border-radius:24px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.22),rgba(var(--accent-rgb),0.06)); backdrop-filter:blur(10px); z-index:1; }
+    @keyframes welcomePop { from{opacity:0;transform:scale(0.3) rotate(-25deg);} to{opacity:1;transform:scale(1) rotate(0);} }
+    @keyframes welcomeFloat { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.03);} }
+    @keyframes welcomeGlow { 0%,100%{box-shadow:0 0 20px rgba(var(--accent-rgb),0.15),0 0 40px rgba(var(--accent-rgb),0.08);} 50%{box-shadow:0 0 30px rgba(var(--accent-rgb),0.4),0 0 60px rgba(var(--accent-rgb),0.2),0 0 80px rgba(var(--accent-rgb),0.1);} }
+    @keyframes conicSpinLarge { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+    .gemini-logo-svg-large { position:relative; z-index:2; width:46px; height:46px; animation:logoSpinLarge 8s cubic-bezier(0.65,0,0.35,1) infinite, logoBreatheLarge 3.5s ease-in-out infinite; transform-origin:center; }
+    .gemini-logo-svg-large path { fill:url(#geminiGradWelcome); }
+    @keyframes logoSpinLarge { 0%{transform:rotate(0deg) scale(1);} 45%{transform:rotate(180deg) scale(1.1);} 55%{transform:rotate(180deg) scale(1.1);} 100%{transform:rotate(360deg) scale(1);} }
+    @keyframes logoBreatheLarge { 0%,100%{filter:drop-shadow(0 0 6px rgba(var(--accent-rgb),0.5)) brightness(1);} 50%{filter:drop-shadow(0 0 16px rgba(var(--accent-rgb),0.95)) drop-shadow(0 0 30px rgba(244,114,182,0.4)) brightness(1.3);} }
+
+    .sparkle-particle { position:absolute; width:4px; height:4px; background:var(--accent); border-radius:50%; pointer-events:none; z-index:3; opacity:0; }
+    .sparkle-particle.p1{top:10%;left:15%;animation:sparkle1 3s ease-in-out infinite;}
+    .sparkle-particle.p2{top:20%;right:10%;animation:sparkle2 3.5s ease-in-out infinite 0.5s;}
+    .sparkle-particle.p3{bottom:15%;left:20%;animation:sparkle3 4s ease-in-out infinite 1s;}
+    .sparkle-particle.p4{bottom:20%;right:18%;animation:sparkle4 3.2s ease-in-out infinite 1.5s;}
+    @keyframes sparkle1{0%,100%{opacity:0;transform:scale(0) translate(0,0);}50%{opacity:1;transform:scale(1.5) translate(-8px,-8px);}}
+    @keyframes sparkle2{0%,100%{opacity:0;transform:scale(0) translate(0,0);}50%{opacity:1;transform:scale(1.2) translate(8px,-6px);}}
+    @keyframes sparkle3{0%,100%{opacity:0;transform:scale(0) translate(0,0);}50%{opacity:1;transform:scale(1.4) translate(-6px,8px);}}
+    @keyframes sparkle4{0%,100%{opacity:0;transform:scale(0) translate(0,0);}50%{opacity:1;transform:scale(1.3) translate(8px,6px);}}
+
+    .wordmark-main { font-family:'Bebas Neue',sans-serif; font-size:1.55rem; letter-spacing:0.08em; color:var(--text); line-height:1; transition:color 0.5s; }
+    .wordmark-sub { font-size:0.65rem; font-weight:600; letter-spacing:0.18em; color:var(--accent); text-transform:uppercase; transition:color 0.5s; }
+    .header-right { display:flex; align-items:center; gap:10px; }
+    .palette-switcher { display:flex; gap:6px; align-items:center; }
+    .palette-btn { width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),border-color 0.3s; }
+    .palette-btn:hover { transform:scale(1.3); }
+    .palette-btn.active { border-color:var(--text); }
+    .palette-btn[data-p="violet"]{background:#a78bfa;} .palette-btn[data-p="cyborg"]{background:#00c8ff;} .palette-btn[data-p="ice"]{background:#3b82f6;} .palette-btn[data-p="rosepine"]{background:#eb6f92;} .palette-btn[data-p="white"]{background:#ffffff;border:2px solid #ccc;} .palette-btn[data-p="reset"]{background:#000000;}
+    .settings-toggle { width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:color 0.3s,background 0.3s,border-color 0.5s,transform 0.3s; }
+    .settings-toggle:hover { color:var(--accent); background:rgba(var(--accent-rgb),0.1); transform:rotate(30deg); }
+    .settings-toggle.open { color:var(--accent); background:rgba(var(--accent-rgb),0.12); transform:rotate(60deg); }
+    .settings-toggle.needs-key { animation:needKeyPulse 2s ease-in-out infinite; }
+    @keyframes needKeyPulse { 0%,100%{box-shadow:0 0 0 0 rgba(var(--accent2),0);} 50%{box-shadow:0 0 0 4px rgba(236,72,153,0.25);} }
+
+    /* Model selector pill */
+    .model-select-wrap { position:relative; }
+    .model-badge { display:flex; align-items:center; gap:7px; font-size:0.74rem; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); padding:6px 11px 6px 13px; border-radius:999px; cursor:pointer; transition:background 0.3s,border-color 0.5s,color 0.5s; user-select:none; }
+    .model-badge:hover { border-color:rgba(var(--accent-rgb),0.4); background:rgba(var(--accent-rgb),0.08); }
+    .model-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2.5s ease-in-out infinite; transition:background 0.5s; flex-shrink:0; }
+    @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(var(--accent-rgb),0.4);} 50%{opacity:0.5;box-shadow:0 0 0 4px rgba(var(--accent-rgb),0);} }
+    .model-badge .caret { width:10px; height:10px; transition:transform 0.3s; opacity:0.6; }
+    .model-badge.open .caret { transform:rotate(180deg); }
+    .model-menu { position:absolute; top:calc(100% + 8px); right:0; min-width:250px; background:var(--settings-card); border:1px solid var(--border); border-radius:16px; padding:6px; box-shadow:var(--shadow-md); z-index:50; opacity:0; transform:translateY(-8px) scale(0.97); pointer-events:none; transition:opacity 0.22s,transform 0.22s; transform-origin:top right; max-height:70vh; overflow-y:auto; }
+    .model-menu.open { opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+    .model-menu::-webkit-scrollbar{width:4px;} .model-menu::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .model-option { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 11px; border-radius:10px; cursor:pointer; transition:background 0.18s; }
+    .model-option:hover { background:rgba(var(--accent-rgb),0.1); }
+    .model-option.active { background:rgba(var(--accent-rgb),0.14); }
+    .model-option-main { display:flex; flex-direction:column; gap:2px; }
+    .model-option-name { font-size:0.86rem; font-weight:600; color:var(--text); }
+    .model-option-meta { font-size:0.66rem; color:var(--muted); letter-spacing:0.02em; }
+    .model-option-check { color:var(--accent); opacity:0; transition:opacity 0.18s; flex-shrink:0; }
+    .model-option.active .model-option-check { opacity:1; }
+    .model-group-label { font-size:0.6rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); padding:8px 11px 4px; }
+
+    .settings-panel { position:absolute; top:0; left:0; right:0; bottom:0; background:var(--settings-bg); z-index:20; display:flex; flex-direction:column; transform:translateX(100%); opacity:0; transition:transform 0.5s cubic-bezier(0.34,1.2,0.64,1),opacity 0.3s ease; pointer-events:none; overflow-y:auto; }
+    .settings-panel.open { transform:translateX(0); opacity:1; pointer-events:all; }
+    .settings-header { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid var(--border); background:var(--header-bg); backdrop-filter:blur(20px); transition:background 0.5s,border-color 0.5s; position:sticky; top:0; z-index:5; }
+    .settings-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:0.08em; color:var(--text); transition:color 0.5s; }
+    .settings-inner { max-width:760px; margin:0 auto; width:100%; }
+    .settings-close { width:32px; height:32px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:16px; transition:color 0.3s,background 0.3s; line-height:1; }
+    .settings-close:hover { color:var(--accent2); background:rgba(244,114,182,0.1); }
+    .settings-body { padding:28px 24px; display:flex; flex-direction:column; gap:24px; flex:1; }
+    .settings-section { display:flex; flex-direction:column; gap:10px; animation:fadeUp 0.5s ease both; }
+    .settings-section:nth-child(2){animation-delay:0.08s;} .settings-section:nth-child(3){animation-delay:0.16s;} .settings-section:nth-child(4){animation-delay:0.24s;} .settings-section:nth-child(5){animation-delay:0.32s;}
+    .settings-label { font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); transition:color 0.5s; display:flex; align-items:center; gap:7px; }
+    .settings-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; transition:color 0.5s; }
+    .settings-desc a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent); }
+    .settings-card { background:var(--settings-card); border:1px solid var(--border); border-radius:14px; padding:16px; transition:background 0.5s,border-color 0.5s; }
+    #prompt-textarea { width:100%; background:transparent; border:none; outline:none; resize:vertical; color:var(--text); font-family:'Outfit',sans-serif; font-size:0.9rem; line-height:1.6; min-height:140px; transition:color 0.5s; }
+    #prompt-textarea::placeholder { color:var(--muted); }
+    .prompt-char-count { font-size:0.72rem; color:var(--muted); text-align:right; margin-top:8px; transition:color 0.5s; }
+    .settings-btn-row { display:flex; gap:10px; }
+    .btn-save { flex:1; padding:11px 20px; border-radius:10px; border:none; cursor:pointer; background:var(--accent); color:var(--bg); font-family:'Outfit',sans-serif; font-size:0.88rem; font-weight:600; transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s; }
+    .btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(var(--accent-rgb),0.4); }
+    .btn-save:active { transform:translateY(0); }
+    .btn-reset-prompt { padding:11px 18px; border-radius:10px; border:1px solid var(--border); cursor:pointer; background:var(--surface2); color:var(--muted); font-family:'Outfit',sans-serif; font-size:0.88rem; transition:color 0.2s,border-color 0.2s,background 0.5s; }
+    .btn-reset-prompt:hover { color:var(--accent2); border-color:var(--accent2); }
+    .save-toast { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--accent); padding:10px 14px; background:rgba(var(--accent-rgb),0.1); border:1px solid rgba(var(--accent-rgb),0.2); border-radius:10px; margin-top:4px; opacity:0; transform:translateY(6px); transition:opacity 0.3s,transform 0.3s; }
+    .save-toast.visible { opacity:1; transform:translateY(0); }
+
+    /* API key input */
+    .key-field { display:flex; align-items:center; gap:8px; }
+    .key-field input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'Outfit',sans-serif; font-size:0.9rem; letter-spacing:0.04em; }
+    .key-field input::placeholder { color:var(--muted); letter-spacing:0; }
+    .key-toggle-vis { background:transparent; border:none; color:var(--muted); cursor:pointer; padding:4px; display:flex; align-items:center; transition:color 0.2s; }
+    .key-toggle-vis:hover { color:var(--accent); }
+    .key-status { font-size:0.74rem; display:flex; align-items:center; gap:6px; margin-top:2px; }
+    .key-status.ok { color:var(--accent); } .key-status.none { color:var(--accent2); }
+    .key-dot { width:7px; height:7px; border-radius:50%; }
+    .key-status.ok .key-dot { background:var(--accent); } .key-status.none .key-dot { background:var(--accent2); }
+
+    .theme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .theme-tile { border-radius:12px; padding:11px 12px; border:2px solid transparent; cursor:pointer; transition:border-color 0.2s,transform 0.2s; display:flex; align-items:center; gap:8px; }
+    .theme-tile:hover { transform:translateY(-3px); }
+    .theme-tile.active { border-color:var(--accent) !important; }
+    .theme-dot-large { width:22px; height:22px; border-radius:50%; flex-shrink:0; border:2px solid rgba(255,255,255,0.15); }
+    .theme-tile-label { font-size:0.8rem; font-weight:600; }
+    .theme-tile[data-t="violet"]{background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);}
+    .theme-tile[data-t="cyborg"]{background:rgba(0,200,255,0.07);border-color:rgba(0,200,255,0.15);}
+    .theme-tile[data-t="ice"]{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.18);}
+    .theme-tile[data-t="rosepine"]{background:rgba(235,111,146,0.08);border-color:rgba(235,111,146,0.18);}
+    .theme-tile[data-t="white"]{background:rgba(200,200,210,0.15);border-color:rgba(180,180,200,0.25);}
+    .theme-tile[data-t="reset"]{background:rgba(120,120,140,0.08);border-color:rgba(120,120,140,0.15);}
+
+    #messages { overflow-y:auto; padding:28px 0 16px; display:flex; flex-direction:column; gap:20px; }
+    #messages::-webkit-scrollbar { width:4px; }
+    #messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    .messages-inner { max-width:820px; margin:0 auto; width:100%; padding:0 24px; display:flex; flex-direction:column; gap:22px; }
+
+    .welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:16px; padding:60px 20px; text-align:center; }
+    .welcome h2 { font-family:'Bebas Neue',sans-serif; font-size:2.3rem; letter-spacing:0.06em; color:var(--text); animation:fadeUp 0.6s ease 0.35s both; transition:color 0.5s; }
+    .welcome p { font-size:0.9rem; color:var(--muted); max-width:340px; line-height:1.6; animation:fadeUp 0.6s ease 0.45s both; transition:color 0.5s; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+    .suggestion-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px; animation:fadeUp 0.6s ease 0.55s both; }
+    .chip { font-size:0.78rem; color:var(--text); background:var(--surface2); border:1px solid var(--border); padding:8px 16px; border-radius:999px; cursor:pointer; transition:border-color 0.3s,background 0.3s,transform 0.2s,color 0.5s,box-shadow 0.3s; animation:chipSlideUp 0.4s ease-out both; }
+    .chip:nth-child(1){animation-delay:0.6s;} .chip:nth-child(2){animation-delay:0.65s;} .chip:nth-child(3){animation-delay:0.7s;} .chip:nth-child(4){animation-delay:0.75s;}
+    @keyframes chipSlideUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    .chip:hover { border-color:var(--accent); background:rgba(var(--accent-rgb),0.12); transform:translateY(-3px); box-shadow:0 4px 12px rgba(var(--accent-rgb),0.15); }
+    .chip:active { transform:translateY(-1px); }
+
+    .msg-row { display:flex; flex-direction:column; gap:6px; }
+    .msg-row.user { align-items:flex-end; animation:slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .msg-row.ai { align-items:flex-start; animation:slideInLeft 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    @keyframes slideInRight { from{opacity:0;transform:translateX(30px) scale(0.95);} to{opacity:1;transform:translateX(0) scale(1);} }
+    @keyframes slideInLeft { from{opacity:0;transform:translateX(-30px) scale(0.95);} to{opacity:1;transform:translateX(0) scale(1);} }
+    .msg-label { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:0 4px; transition:color 0.5s; }
+    .msg-row.user .msg-label { color:rgba(var(--accent-rgb),0.75); }
+    .msg-content { display:flex; flex-direction:column; gap:8px; max-width:82%; }
+    .bubble { padding:13px 17px; font-size:0.93rem; line-height:1.65; word-break:break-word; transition:background 0.5s,border-color 0.5s; border-radius:var(--radius); box-shadow:var(--shadow-sm); }
+    .msg-row.user .bubble { background:var(--user-bubble); border:1px solid rgba(var(--accent-rgb),0.15); border-radius:16px 4px 16px 16px; color:var(--text); white-space:pre-wrap; }
+    .msg-row.ai .bubble { background:var(--ai-bubble); border:1px solid var(--border); border-radius:4px 16px 16px 16px; color:var(--text); }
+    .bubble h1,.bubble h2,.bubble h3,.bubble h4{font-family:'Bebas Neue',sans-serif;letter-spacing:0.04em;color:var(--accent);margin:14px 0 7px;line-height:1.2;transition:color 0.5s;}
+    .bubble h1{font-size:1.5rem;} .bubble h2{font-size:1.28rem;} .bubble h3{font-size:1.08rem;} .bubble h4{font-size:0.95rem;}
+    .bubble > :first-child{margin-top:0;}
+    .bubble p{margin:0 0 9px;} .bubble p:last-child{margin-bottom:0;}
+    .bubble strong{color:var(--text);font-weight:700;} .bubble em{font-style:italic;opacity:0.9;}
+    .bubble a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(var(--accent-rgb),0.4);transition:border-color 0.2s;} .bubble a:hover{border-color:var(--accent);}
+    .bubble code{font-family:'Courier New',monospace;font-size:0.84em;background:rgba(var(--accent-rgb),0.1);color:var(--accent);padding:1px 6px;border-radius:5px;border:1px solid rgba(var(--accent-rgb),0.2);transition:background 0.5s,color 0.5s,border-color 0.5s;}
+    .code-block{position:relative;margin:10px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface);transition:background 0.5s,border-color 0.5s;}
+    .code-block-head{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(var(--accent-rgb),0.06);border-bottom:1px solid var(--border);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    .code-copy{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;transition:color 0.2s,background 0.2s;}
+    .code-copy:hover{color:var(--accent);background:rgba(var(--accent-rgb),0.1);}
+    .code-block pre{margin:0;padding:13px 15px;overflow-x:auto;}
+    .code-block pre code{background:transparent;border:none;padding:0;color:var(--text);font-size:0.85em;opacity:0.92;line-height:1.55;}
+    .code-block pre::-webkit-scrollbar{height:6px;} .code-block pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+    .bubble ul,.bubble ol{padding-left:22px;margin:7px 0;} .bubble li{margin:4px 0;}
+    .bubble ul li{list-style:disc;} .bubble ol li{list-style:decimal;}
+    .bubble li > ul, .bubble li > ol{margin:4px 0;}
+    .bubble blockquote{border-left:3px solid var(--accent);padding:6px 14px;margin:10px 0;color:var(--muted);font-style:italic;background:rgba(var(--accent-rgb),0.04);border-radius:0 8px 8px 0;transition:border-color 0.5s,background 0.5s;}
+    .bubble hr{border:none;border-top:1px solid var(--border);margin:12px 0;}
+    .table-wrap{overflow-x:auto;margin:10px 0;border-radius:10px;border:1px solid var(--border);transition:border-color 0.5s;}
+    .table-wrap::-webkit-scrollbar{height:6px;} .table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+    .bubble table{border-collapse:collapse;width:100%;font-size:0.86rem;}
+    .bubble th,.bubble td{padding:8px 13px;text-align:left;border-bottom:1px solid var(--border);}
+    .bubble th{background:rgba(var(--accent-rgb),0.08);color:var(--accent);font-weight:700;font-size:0.78rem;letter-spacing:0.04em;text-transform:uppercase;}
+    .bubble tr:last-child td{border-bottom:none;}
+    .bubble tbody tr:hover{background:rgba(var(--accent-rgb),0.04);}
+    .msg-meta { font-size:0.6rem; color:var(--muted); padding:0 4px; display:flex; gap:8px; align-items:center; }
+    .msg-meta .meta-model { color:var(--accent); font-weight:600; }
+    .image-attachment{border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:300px;transition:border-color 0.5s;}
+    .image-attachment img{width:100%;height:auto;display:block;border-radius:8px;}
+    .msg-row.user .image-attachment{border-color:rgba(var(--accent-rgb),0.25);}
+    .typing-dots{display:flex;gap:5px;padding:14px 18px;background:var(--ai-bubble);border:1px solid var(--border);border-radius:4px 16px 16px 16px;width:fit-content;animation:slideInLeft 0.4s ease both;transition:background 0.5s,border-color 0.5s;}
+    .typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:bounce 1.4s ease-in-out infinite;transition:background 0.5s;}
+    .typing-dots span:nth-child(1){animation-delay:0s;} .typing-dots span:nth-child(2){animation-delay:0.2s;} .typing-dots span:nth-child(3){animation-delay:0.4s;}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4;}30%{transform:translateY(-8px);opacity:1;}}
+    .error-bubble{font-size:0.84rem;color:var(--accent2);background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);border-radius:10px;padding:11px 15px;max-width:82%;line-height:1.5;animation:slideInLeft 0.4s ease both;}
+    .error-bubble b{cursor:pointer;text-decoration:underline;}
+
+    #input-bar { padding:14px 0 20px; border-top:1px solid var(--border); background:var(--input-bg); backdrop-filter:blur(20px); transition:border-color 0.5s,background 0.5s; width:100%; }
+    .input-bar-inner { max-width:820px; margin:0 auto; width:100%; padding:0 24px; }
+
+    .image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:0 8px;}
+    .image-preview-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);animation:scaleUp 0.3s ease both;}
+    .image-preview-item:nth-child(1){animation-delay:0s;} .image-preview-item:nth-child(2){animation-delay:0.05s;} .image-preview-item:nth-child(3){animation-delay:0.1s;}
+    @keyframes scaleUp{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+    .image-preview-item img{width:60px;height:60px;object-fit:cover;display:block;}
+    .remove-image{position:absolute;top:2px;right:2px;width:20px;height:20px;background:rgba(0,0,0,0.6);border:none;border-radius:3px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:background 0.3s;}
+    .remove-image:hover{background:rgba(244,114,182,0.9);}
+    .compose{display:flex;align-items:flex-end;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:8px 8px 8px 16px;transition:border-color 0.3s,background 0.5s,box-shadow 0.3s;box-shadow:var(--shadow-sm);}
+    .compose:focus-within{border-color:rgba(var(--accent-rgb),0.4);box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.1);}
+    .compose.drag-over{border-color:var(--accent);background:rgba(var(--accent-rgb),0.08);}
+    #msg-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.93rem;outline:none;resize:none;max-height:120px;line-height:1.5;padding:6px 0;transition:color 0.5s;}
+    #msg-input::placeholder{color:var(--muted);}
+    .input-buttons{display:flex;gap:6px;}
+    .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:color 0.2s,background 0.2s,transform 0.2s;flex-shrink:0;}
+    .icon-btn:hover{color:var(--accent);background:rgba(var(--accent-rgb),0.12);transform:scale(1.12);}
+    .icon-btn:active{transform:scale(0.92);}
+    .icon-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+    #send-btn{background:var(--accent);border:none;border-radius:13px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s,opacity 0.3s,background 0.5s,box-shadow 0.3s;}
+    #send-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(var(--accent-rgb),0.4);}
+    #send-btn:active{transform:scale(0.95);}
+    #send-btn:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none;}
+    #send-btn svg{width:17px;height:17px;fill:var(--bg);}
+    .input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;flex-wrap:wrap;gap:6px;}
+    .input-footer > span{font-size:0.67rem;color:var(--muted);transition:color 0.5s;}
+    .footer-model{font-size:0.67rem;color:var(--muted);}
+    .footer-model b{color:var(--accent);font-weight:600;}
+    .clear-btn{font-size:0.67rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color 0.2s;}
+    .clear-btn:hover{color:var(--accent2);}
+    #file-input{display:none;}
+    @media(max-width:560px){ .model-option-meta{display:none;} .palette-switcher{display:none;} .wordmark-sub{display:none;} }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="geminiGradHeader" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--accent)"><animate attributeName="stop-color" values="#6366f1;#a78bfa;#ec4899;#6366f1" dur="6s" repeatCount="indefinite"/></stop>
+      <stop offset="100%" stop-color="var(--accent2)"><animate attributeName="stop-color" values="#ec4899;#6366f1;#a78bfa;#ec4899" dur="6s" repeatCount="indefinite"/></stop>
+    </linearGradient>
+    <linearGradient id="geminiGradWelcome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--accent)"><animate attributeName="stop-color" values="#6366f1;#a78bfa;#ec4899;#f6c177;#6366f1" dur="8s" repeatCount="indefinite"/></stop>
+      <stop offset="50%" stop-color="var(--accent2)"><animate attributeName="stop-color" values="#a78bfa;#ec4899;#6366f1;#a78bfa" dur="8s" repeatCount="indefinite"/></stop>
+      <stop offset="100%" stop-color="var(--accent2)"><animate attributeName="stop-color" values="#ec4899;#6366f1;#a78bfa;#ec4899" dur="8s" repeatCount="indefinite"/></stop>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+
+<div class="app">
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <div class="settings-inner" style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="settings-title">⚙ Settings</span>
+        <button class="settings-close" id="settingsClose" title="Close">✕</button>
+      </div>
+    </div>
+    <div class="settings-body">
+     <div class="settings-inner" style="display:flex;flex-direction:column;gap:24px;">
+
+      <div class="settings-section">
+        <div class="settings-label">🔑 Your Gemini API Key</div>
+        <div class="settings-desc">This app talks to Google's Gemini API <b>directly from your browser</b> using your own key. Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a>. It's stored only in this browser (localStorage) and never sent anywhere except Google.</div>
+        <div class="settings-card">
+          <div class="key-field">
+            <input id="apiKeyInput" type="password" placeholder="AIza…  paste your API key here" autocomplete="off" spellcheck="false"/>
+            <button class="key-toggle-vis" id="keyToggleVis" title="Show / hide">
+              <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="key-status none" id="keyStatus"><span class="key-dot"></span><span id="keyStatusText">No API key saved yet.</span></div>
+        <div class="settings-btn-row">
+          <button class="btn-save" id="saveKeyBtn">Save API Key</button>
+          <button class="btn-reset-prompt" id="clearKeyBtn">Remove Key</button>
+        </div>
+        <div class="save-toast" id="keyToast">✦ API key saved successfully!</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">🎨 Theme</div>
+        <div class="settings-desc">Choose a color palette for the interface.</div>
+        <div class="theme-grid">
+          <div class="theme-tile" data-t="violet"><div class="theme-dot-large" style="background:#a78bfa;"></div><span class="theme-tile-label" style="color:#a78bfa;">Violet</span></div>
+          <div class="theme-tile" data-t="cyborg"><div class="theme-dot-large" style="background:#00c8ff;"></div><span class="theme-tile-label" style="color:#00c8ff;">Cyborg</span></div>
+          <div class="theme-tile" data-t="ice"><div class="theme-dot-large" style="background:#3b82f6;"></div><span class="theme-tile-label" style="color:#3b82f6;">Ice</span></div>
+          <div class="theme-tile" data-t="rosepine"><div class="theme-dot-large" style="background:#eb6f92;"></div><span class="theme-tile-label" style="color:#eb6f92;">Rose Pine</span></div>
+          <div class="theme-tile active" data-t="white"><div class="theme-dot-large" style="background:#ffffff;border:2px solid #ccc;"></div><span class="theme-tile-label" style="color:var(--text);">White</span></div>
+          <div class="theme-tile" data-t="reset"><div class="theme-dot-large" style="background:#000000;"></div><span class="theme-tile-label" style="color:var(--muted);">Black</span></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">🧠 Active Model</div>
+        <div class="settings-desc">Pick which Gemini model handles your requests.</div>
+        <div class="settings-card" id="settingsModelList"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">✦ System Prompt</div>
+        <div class="settings-desc">Customize how the AI behaves and formats its answers. This is sent before every conversation.</div>
+        <div class="settings-card">
+          <textarea id="prompt-textarea" placeholder="Enter a custom system prompt…" maxlength="6000"></textarea>
+          <div class="prompt-char-count"><span id="charCount">0</span> / 6000</div>
+        </div>
+        <div class="settings-btn-row">
+          <button class="btn-save" id="savePromptBtn">Save Prompt</button>
+          <button class="btn-reset-prompt" id="resetPromptBtn">Reset to Default</button>
+        </div>
+        <div class="save-toast" id="saveToast">✦ System prompt saved successfully!</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">⚠ Danger Zone</div>
+        <div class="settings-desc">Permanently clear your current conversation history.</div>
+        <div class="settings-btn-row">
+          <button class="btn-reset-prompt" id="clearFromSettings" style="flex:1;">Clear Chat History</button>
+        </div>
+      </div>
+
+     </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="wordmark">
+        <div class="wordmark-icon">
+          <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="wordmark-main">Gemini AI</div>
+          <div class="wordmark-sub">Powered by Gemini</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="palette-switcher">
+          <button class="palette-btn" data-p="violet" title="Violet"></button>
+          <button class="palette-btn" data-p="cyborg" title="Cyborg"></button>
+          <button class="palette-btn" data-p="ice" title="Ice"></button>
+          <button class="palette-btn" data-p="rosepine" title="Rose Pine"></button>
+          <button class="palette-btn active" data-p="white" title="White"></button>
+          <button class="palette-btn" data-p="reset" title="Black"></button>
+        </div>
+        <div class="model-select-wrap">
+          <div class="model-badge" id="modelBadge" title="Select model">
+            <span class="model-dot"></span>
+            <span id="modelBadgeName">Gemini 2.5 Flash</span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="model-menu" id="modelMenu"></div>
+        </div>
+        <button class="settings-toggle" id="settingsToggle" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="messages">
+    <div class="messages-inner" id="messagesInner">
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">
+          <span class="sparkle-particle p1"></span>
+          <span class="sparkle-particle p2"></span>
+          <span class="sparkle-particle p3"></span>
+          <span class="sparkle-particle p4"></span>
+          <svg class="gemini-logo-svg-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
+          </svg>
+        </div>
+        <h2>What Can I Help With?</h2>
+        <p>Made by TM — ask anything, paste images too. Add your Gemini API key in ⚙ Settings to get started.</p>
+        <div class="suggestion-chips">
+          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+          <div class="chip" onclick="useChip(this)">Write me a poem</div>
+          <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
+          <div class="chip" onclick="useChip(this)">Debug my code</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="input-bar">
+    <div class="input-bar-inner">
+      <div class="image-preview-container" id="imagePreviewContainer"></div>
+      <div class="compose" id="compose">
+        <textarea id="msg-input" placeholder="Ask anything…" rows="1" maxlength="8000"></textarea>
+        <div class="input-buttons">
+          <button class="icon-btn" id="attach-btn" title="Attach image (or paste Ctrl+V)">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+          </button>
+          <button id="send-btn" aria-label="Send">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-footer">
+        <span>Enter to send · Shift+Enter for new line · Paste images</span>
+        <div class="footer-model">Model: <b id="footerModelName">Gemini 2.5 Flash</b></div>
+        <button class="clear-btn" onclick="clearChat()">clear chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" multiple />
+
+<script>
+  /* ============================================================
+     MODEL DEFINITIONS
+     id   -> display key
+     api  -> the model name used in the Gemini REST endpoint
+             https://generativelanguage.googleapis.com/v1beta/models/<api>:generateContent
+     Note: some names (e.g. "Gemini 3.5 Flash") are aliased to the
+     closest real public API model so requests still succeed; you
+     can change the `api` values any time as Google ships new ids.
+     ============================================================ */
+  const MODELS = [
+    { id:"gemini-2.5-flash",       name:"Gemini 2.5 Flash",       api:"gemini-2.5-flash" },
+    { id:"gemini-2.5-pro",         name:"Gemini 2.5 Pro",         api:"gemini-2.5-pro" },
+    { id:"gemini-2.5-flash-lite",  name:"Gemini 2.5 Flash Lite",  api:"gemini-2.5-flash-lite" },
+    { id:"gemini-2-flash",         name:"Gemini 2 Flash",         api:"gemini-2.0-flash" },
+    { id:"gemini-2-flash-lite",    name:"Gemini 2 Flash Lite",    api:"gemini-2.0-flash-lite" },
+    { id:"gemini-3-flash",         name:"Gemini 3 Flash",         api:"gemini-3-flash-preview" },
+    { id:"gemini-3.5-flash",       name:"Gemini 3.5 Flash",       api:"gemini-3-flash-preview" },
+    { id:"gemini-3.1-flash-lite",  name:"Gemini 3.1 Flash Lite",  api:"gemini-flash-lite-latest" },
+    { id:"gemini-3.1-pro",         name:"Gemini 3.1 Pro",         api:"gemini-3-pro-preview" }
+  ];
+  function getModel(id){ return MODELS.find(m => m.id === id) || MODELS[0]; }
+
+  /* ---------- A much longer, better system prompt ---------- */
+  const DEFAULT_PROMPT =
+`You are Gemini AI, a warm, brilliant, and meticulous assistant built to help students and curious people learn, create, and solve problems. You were made by TM. Your goal is to be genuinely useful: accurate, clear, and a pleasure to read.
+
+## CORE BEHAVIOUR
+- Be accurate first. If you are unsure or something cannot be known, say so plainly instead of inventing facts.
+- Match the depth of your answer to the question. Give short, direct replies to simple questions; take your time and reason step-by-step on complex or multi-part problems.
+- Always actually answer the question. Don't dodge, don't over-hedge, and don't end with unnecessary disclaimers.
+- Be encouraging and respectful. Assume good intent. Never be condescending.
+- When a request is ambiguous, make the most reasonable assumption, state it briefly, and proceed — only ask a clarifying question if you truly cannot continue without it.
+
+## FORMATTING (VERY IMPORTANT)
+You can and should use rich Markdown to make every answer beautiful and easy to scan. Use:
+- **Headings** (##, ###) to organise longer answers into clear sections.
+- **Bold** for key terms and **lists** (bulleted or numbered) for steps, options, and comparisons.
+- **Tables** for any structured comparison, dataset, or set of options — they render with styled columns, so use them whenever data has two or more attributes.
+- **Code blocks** with a language tag (e.g. \`\`\`python) for ALL code, commands, and config — they render with a copy button and syntax styling. Use \`inline code\` for short identifiers, file names, and values.
+- **Blockquotes** (>) for definitions, important notes, or quotes.
+- **Horizontal rules** (---) to separate major sections when helpful.
+- LaTeX-style is not rendered, so write math in plain readable form (e.g. x = (-b ± √(b²-4ac)) / 2a) using clear symbols.
+Keep paragraphs short. Prefer structure over walls of text. Never wrap your entire reply in a single code block.
+
+## SUBJECT GUIDANCE
+- **Math & science:** Show your working step by step, label each step, and state the final answer clearly (e.g. on its own line in bold). Double-check arithmetic.
+- **Coding:** Give working, idiomatic code with brief comments. Explain the key idea before or after the block. Mention edge cases or how to run it when relevant.
+- **Writing & language:** Adapt tone and style to the request. Offer the finished piece first, then optional notes.
+- **Explanations:** Start with a one-sentence plain-language summary, then go deeper. Use analogies for hard concepts.
+- **Homework help:** Teach, don't just dump answers — show the method so the student can do the next one themselves, while still giving the full solution.
+
+## SAFETY
+Decline genuinely harmful requests politely and briefly, and offer a safe alternative when possible. Otherwise, be helpful and complete.
+
+Above all: be clear, be correct, format everything nicely, and finish the job.`;
+
+  let SYSTEM_PROMPT = DEFAULT_PROMPT;
+  let history = [], isLoading = false, attachedImages = [];
+  let activeModelId = MODELS[0].id;
+  let API_KEY = "";
+
+  const LS_KEY = "gemini_api_key";
+  const LS_PROMPT = "gemini_system_prompt";
+  const LS_MODEL = "gemini_active_model";
+  const LS_THEME = "gemini_theme";
+
+  /* ---------- DOM ---------- */
+  const messagesEl = document.getElementById('messages');
+  const messagesInner = document.getElementById('messagesInner');
+  const msgInput = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
+  const attachBtn = document.getElementById('attach-btn');
+  const fileInput = document.getElementById('file-input');
+  const compose = document.getElementById('compose');
+  const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsClose = document.getElementById('settingsClose');
+  const promptTextarea = document.getElementById('prompt-textarea');
+  const charCount = document.getElementById('charCount');
+  const saveToast = document.getElementById('saveToast');
+  const modelBadge = document.getElementById('modelBadge');
+  const modelMenu = document.getElementById('modelMenu');
+  const modelBadgeName = document.getElementById('modelBadgeName');
+  const footerModelName = document.getElementById('footerModelName');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const keyStatus = document.getElementById('keyStatus');
+  const keyStatusText = document.getElementById('keyStatusText');
+  const keyToast = document.getElementById('keyToast');
+  let toastTimer, keyToastTimer;
+
+  /* ---------- API key handling ---------- */
+  function refreshKeyStatus(){
+    if(API_KEY){
+      keyStatus.className = 'key-status ok';
+      keyStatusText.textContent = 'API key saved — you are ready to chat. (' + API_KEY.slice(0,6) + '…' + API_KEY.slice(-4) + ')';
+      settingsToggle.classList.remove('needs-key');
+    } else {
+      keyStatus.className = 'key-status none';
+      keyStatusText.textContent = 'No API key saved yet. Add one to start chatting.';
+      settingsToggle.classList.add('needs-key');
+    }
+  }
+  function saveKey(){
+    API_KEY = apiKeyInput.value.trim();
+    try{ if(API_KEY) localStorage.setItem(LS_KEY, API_KEY); else localStorage.removeItem(LS_KEY); }catch(e){}
+    refreshKeyStatus();
+    keyToast.classList.add('visible');
+    clearTimeout(keyToastTimer); keyToastTimer = setTimeout(()=> keyToast.classList.remove('visible'), 3000);
+  }
+  function clearKey(){
+    API_KEY = ""; apiKeyInput.value = "";
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    refreshKeyStatus();
+  }
+  document.getElementById('saveKeyBtn').addEventListener('click', saveKey);
+  document.getElementById('clearKeyBtn').addEventListener('click', clearKey);
+  document.getElementById('keyToggleVis').addEventListener('click', ()=>{
+    apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
+  });
+
+  /* ---------- Model menu rendering ---------- */
+  function modelOptionsHtml(){
+    return MODELS.map(m => `
+      <div class="model-option ${m.id===activeModelId?'active':''}" data-model="${m.id}">
+        <div class="model-option-main">
+          <span class="model-option-name">${m.name}</span>
+          <span class="model-option-meta">${m.api}</span>
+        </div>
+        <svg class="model-option-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>`).join('');
+  }
+  function buildModelMenu(){
+    modelMenu.innerHTML = `<div class="model-group-label">Gemini Models</div>` + modelOptionsHtml();
+    modelMenu.querySelectorAll('.model-option').forEach(opt => opt.addEventListener('click', ()=> selectModel(opt.dataset.model)));
+  }
+  function buildSettingsModelList(){
+    const el = document.getElementById('settingsModelList');
+    el.innerHTML = modelOptionsHtml();
+    el.querySelectorAll('.model-option').forEach(opt => opt.addEventListener('click', ()=> selectModel(opt.dataset.model)));
+  }
+  function selectModel(id){
+    activeModelId = id;
+    const m = getModel(id);
+    modelBadgeName.textContent = m.name;
+    footerModelName.textContent = m.name;
+    buildModelMenu(); buildSettingsModelList();
+    closeModelMenu();
+    try{ localStorage.setItem(LS_MODEL, id); }catch(e){}
+  }
+  function openModelMenu(){ modelMenu.classList.add('open'); modelBadge.classList.add('open'); }
+  function closeModelMenu(){ modelMenu.classList.remove('open'); modelBadge.classList.remove('open'); }
+  modelBadge.addEventListener('click', e=>{ e.stopPropagation(); modelMenu.classList.contains('open') ? closeModelMenu() : openModelMenu(); });
+  document.addEventListener('click', e=>{ if(!e.target.closest('.model-select-wrap')) closeModelMenu(); });
+
+  /* ---------- Settings panel ---------- */
+  function openSettings(){
+    promptTextarea.value = SYSTEM_PROMPT; charCount.textContent = SYSTEM_PROMPT.length;
+    apiKeyInput.value = API_KEY;
+    settingsPanel.classList.add('open'); settingsToggle.classList.add('open');
+  }
+  function closeSettings(){ settingsPanel.classList.remove('open'); settingsToggle.classList.remove('open'); }
+  settingsToggle.addEventListener('click', ()=> settingsPanel.classList.contains('open') ? closeSettings() : openSettings());
+  settingsClose.addEventListener('click', closeSettings);
+  promptTextarea.addEventListener('input', ()=> charCount.textContent = promptTextarea.value.length);
+  document.getElementById('savePromptBtn').addEventListener('click', ()=>{
+    SYSTEM_PROMPT = promptTextarea.value.trim() || DEFAULT_PROMPT;
+    try{ localStorage.setItem(LS_PROMPT, SYSTEM_PROMPT); }catch(e){}
+    saveToast.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(()=> saveToast.classList.remove('visible'), 3000);
+  });
+  document.getElementById('resetPromptBtn').addEventListener('click', ()=>{
+    SYSTEM_PROMPT = DEFAULT_PROMPT; promptTextarea.value = DEFAULT_PROMPT; charCount.textContent = DEFAULT_PROMPT.length;
+    try{ localStorage.setItem(LS_PROMPT, SYSTEM_PROMPT); }catch(e){}
+    saveToast.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(()=> saveToast.classList.remove('visible'), 3000);
+  });
+  document.getElementById('clearFromSettings').addEventListener('click', ()=>{ clearChat(); closeSettings(); });
+
+  /* ---------- Themes ---------- */
+  const themeMap = { violet:'violet', cyborg:'cyborg', ice:'ice', rosepine:'rosepine', white:'', reset:'black' };
+  function applyTheme(p){
+    document.documentElement.dataset.theme = themeMap[p];
+    document.querySelectorAll('.palette-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p));
+    document.querySelectorAll('.theme-tile').forEach(t => t.classList.toggle('active', t.dataset.t === p));
+    try{ localStorage.setItem(LS_THEME, p); }catch(e){}
+  }
+  document.querySelectorAll('.palette-btn').forEach(btn => btn.addEventListener('click', ()=> applyTheme(btn.dataset.p)));
+  document.querySelectorAll('.theme-tile').forEach(tile => tile.addEventListener('click', ()=> applyTheme(tile.dataset.t)));
+
+  /* ---------- Markdown renderer (headings, bold, lists, tables, code, quotes, links) ---------- */
+  function renderMarkdown(text){
+    function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    const cb=[], ic=[];
+    // fenced code blocks
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
+      const i = cb.length;
+      const label = lang ? lang : 'code';
+      cb.push(`<div class="code-block"><div class="code-block-head"><span>${escHtml(label)}</span><button class="code-copy" onclick="copyCode(this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button></div><pre><code>${escHtml(code.replace(/\n$/,''))}</code></pre></div>`);
+      return `\x00CODE${i}\x00`;
+    });
+    // inline code
+    text = text.replace(/`([^`\n]+)`/g,(_,c)=>{ const i = ic.length; ic.push(`<code>${escHtml(c)}</code>`); return `\x00INLINE${i}\x00`; });
+
+    text = escHtml(text);
+
+    // tables  | a | b |\n| --- | --- |\n| 1 | 2 |
+    text = text.replace(/(^\|.+\|[ \t]*\n\|[ \t:|\-]+\|[ \t]*\n(?:\|.*\|[ \t]*\n?)*)/gm, block=>{
+      const lines = block.trim().split('\n');
+      const header = lines[0].split('|').slice(1,-1).map(s=>s.trim());
+      const rows = lines.slice(2).map(l => l.split('|').slice(1,-1).map(s=>s.trim()));
+      let h = '<div class="table-wrap"><table><thead><tr>' + header.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+      h += rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+      h += '</tbody></table></div>';
+      return h;
+    });
+
+    // headings
+    text = text.replace(/^#### (.+)$/gm,'<h4>$1</h4>').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>');
+    // hr
+    text = text.replace(/^(?:---|\*\*\*|___)$/gm,'<hr>');
+    // bold / italic / strikethrough
+    text = text.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+               .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+               .replace(/(^|[^\*])\*([^\*\n]+)\*/g,'$1<em>$2</em>')
+               .replace(/~~(.+?)~~/g,'<del>$1</del>');
+    // links [text](url)
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    // blockquotes
+    text = text.replace(/(?:^&gt; ?.*(?:\n|$))+/gm, m=>{
+      const inner = m.split('\n').filter(l=>l.length).map(l=>l.replace(/^&gt; ?/,'')).join('<br>');
+      return `<blockquote>${inner}</blockquote>`;
+    });
+    // unordered lists
+    text = text.replace(/(?:^[ \t]*[\*\-\+] .+(?:\n|$))+/gm, m=>{
+      const items = m.trim().split('\n').map(l=>`<li>${l.replace(/^[ \t]*[\*\-\+] /,'')}</li>`).join('');
+      return `<ul>${items}</ul>`;
+    });
+    // ordered lists
+    text = text.replace(/(?:^[ \t]*\d+\. .+(?:\n|$))+/gm, m=>{
+      const items = m.trim().split('\n').map(l=>`<li>${l.replace(/^[ \t]*\d+\. /,'')}</li>`).join('');
+      return `<ol>${items}</ol>`;
+    });
+    // paragraphs
+    text = text.split(/\n{2,}/).map(b=>{
+      b = b.trim(); if(!b) return '';
+      if(/^<(h[1-6]|ul|ol|pre|blockquote|hr|div|table)/.test(b)) return b;
+      if(/^\x00CODE\d+\x00$/.test(b)) return b;
+      return '<p>' + b.replace(/\n/g,'<br>') + '</p>';
+    }).join('\n');
+    // restore code
+    text = text.replace(/\x00CODE(\d+)\x00/g,(_,i)=>cb[i]).replace(/\x00INLINE(\d+)\x00/g,(_,i)=>ic[i]);
+    return text;
+  }
+
+  function copyCode(btn){
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard?.writeText(code).then(()=>{
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied';
+      setTimeout(()=> btn.innerHTML = orig, 1500);
+    });
+  }
+
+  /* ---------- Compose ---------- */
+  function autoResize(){ msgInput.style.height='auto'; msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px'; }
+  msgInput.addEventListener('input', autoResize);
+  msgInput.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+  sendBtn.addEventListener('click', sendMessage);
+  attachBtn.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', handleFileSelect);
+  document.addEventListener('paste', e=>{ for(let item of (e.clipboardData?.items||[])){ if(item.type.startsWith('image/')){ e.preventDefault(); addImageFile(item.getAsFile()); } } });
+  compose.addEventListener('dragover', e=>{ e.preventDefault(); compose.classList.add('drag-over'); });
+  compose.addEventListener('dragleave', ()=> compose.classList.remove('drag-over'));
+  compose.addEventListener('drop', e=>{ e.preventDefault(); compose.classList.remove('drag-over'); for(let f of (e.dataTransfer?.files||[])){ if(f.type.startsWith('image/')) addImageFile(f); } });
+  function handleFileSelect(e){ for(let f of e.target.files){ if(f.type.startsWith('image/')) addImageFile(f); } fileInput.value=''; }
+  function addImageFile(file){ const r=new FileReader(); r.onload=ev=>{ attachedImages.push({base64:ev.target.result,name:file.name,type:file.type}); renderImagePreviews(); }; r.readAsDataURL(file); }
+  function renderImagePreviews(){ imagePreviewContainer.innerHTML = attachedImages.map((img,idx)=>`<div class="image-preview-item"><img src="${img.base64}" alt="Attached image"/><button class="remove-image" onclick="removeImage(${idx})">✕</button></div>`).join(''); }
+  function removeImage(idx){ attachedImages.splice(idx,1); renderImagePreviews(); }
+  function useChip(el){ msgInput.value=el.textContent; autoResize(); sendMessage(); }
+  function removeWelcome(){ document.getElementById('welcome')?.remove(); }
+
+  function appendRow(role, text, images=[], modelName=null){
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const imagesHtml = images.map(s=>`<div class="image-attachment"><img src="${s}" alt="Image"/></div>`).join('');
+    let bubbleHtml = '';
+    if(text){ const content = role==='user' ? text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : renderMarkdown(text); bubbleHtml = `<div class="bubble">${content}</div>`; }
+    const metaHtml = (role==='ai' && modelName) ? `<div class="msg-meta"><span class="meta-model">${modelName}</span></div>` : '';
+    row.innerHTML = `<div class="msg-label">${role==='user'?'you':'gemini ai'}</div><div class="msg-content">${imagesHtml}${bubbleHtml}${metaHtml}</div>`;
+    messagesInner.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return row;
+  }
+  function appendTyping(){
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className='msg-row ai'; row.id='typing-row';
+    row.innerHTML = `<div class="msg-label">gemini ai</div><div class="msg-content"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    messagesInner.appendChild(row); messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  function removeTyping(){ document.getElementById('typing-row')?.remove(); }
+  function appendError(msg, withSettings){
+    const div = document.createElement('div');
+    div.className = 'error-bubble';
+    div.innerHTML = '⚠ ' + msg + (withSettings ? ' <b onclick="openSettings()">Open Settings →</b>' : '');
+    messagesInner.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  /* ---------- Send (direct call to Google Gemini API) ---------- */
+  async function sendMessage(){
+    const text = msgInput.value.trim();
+    if((!text && attachedImages.length===0) || isLoading) return;
+
+    if(!API_KEY){
+      removeWelcome();
+      appendError("You need to add your Gemini API key first.", true);
+      openSettings();
+      return;
+    }
+
+    const model = getModel(activeModelId);
+
+    isLoading = true; sendBtn.disabled = true; attachBtn.disabled = true;
+    msgInput.value = ''; msgInput.style.height='auto';
+    const imageDataUrls = attachedImages.map(i=>i.base64);
+    appendRow('user', text, imageDataUrls);
+
+    const userMessage = { role:"user", parts:[] };
+    for(let img of attachedImages) userMessage.parts.push({ inlineData:{ mimeType:img.type, data:img.base64.split(',')[1] } });
+    if(text) userMessage.parts.push({ text });
+    history.push(userMessage);
+    attachedImages = []; renderImagePreviews();
+    appendTyping();
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model.api}:generateContent?key=${encodeURIComponent(API_KEY)}`;
+
+    try{
+      const response = await fetch(endpoint, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          systemInstruction:{ parts:[{ text: SYSTEM_PROMPT }] },
+          contents: history,
+          generationConfig:{ temperature:0.8, topP:0.95, topK:40, maxOutputTokens:4096 }
+        })
+      });
+      const data = await response.json();
+      if(!response.ok){
+        const m = data.error?.message || `HTTP ${response.status}`;
+        throw new Error(m);
+      }
+      const cand = data.candidates?.[0];
+      const reply = cand?.content?.parts?.map(p=>p.text).filter(Boolean).join('') || (cand?.finishReason==='SAFETY' ? "(response blocked by safety filters)" : "(no response)");
+      history.push({ role:"model", parts:[{ text: reply }] });
+      removeTyping(); appendRow('ai', reply, [], model.name);
+    }catch(err){
+      console.error(err);
+      removeTyping();
+      // pop the failed user turn so retry works cleanly
+      if(history[history.length-1]?.role === 'user') history.pop();
+      const msg = err.message || "Something went wrong.";
+      const keyIssue = /api key|api_key|permission|invalid|401|403|not found|400/i.test(msg);
+      appendError(msg, keyIssue);
+    }finally{
+      isLoading = false; sendBtn.disabled = false; attachBtn.disabled = false; msgInput.focus();
+    }
+  }
+
+  function clearChat(){
+    history = []; attachedImages = []; renderImagePreviews();
+    messagesInner.innerHTML = `
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">
+          <span class="sparkle-particle p1"></span><span class="sparkle-particle p2"></span>
+          <span class="sparkle-particle p3"></span><span class="sparkle-particle p4"></span>
+          <svg class="gemini-logo-svg-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z" fill="url(#geminiGradWelcome)"/>
+          </svg>
+        </div>
+        <h2>What Can I Help With?</h2>
+        <p>Made by TM — ask anything, paste images too. Add your Gemini API key in ⚙ Settings to get started.</p>
+        <div class="suggestion-chips">
+          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+          <div class="chip" onclick="useChip(this)">Write me a poem</div>
+          <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
+          <div class="chip" onclick="useChip(this)">Debug my code</div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- Init ---------- */
+  (function init(){
+    // restore saved state
+    try{ const k = localStorage.getItem(LS_KEY); if(k) API_KEY = k; }catch(e){}
+    try{ const p = localStorage.getItem(LS_PROMPT); if(p) SYSTEM_PROMPT = p; }catch(e){}
+    try{ const sm = localStorage.getItem(LS_MODEL); if(sm && getModel(sm).id===sm) activeModelId = sm; }catch(e){}
+    try{ const th = localStorage.getItem(LS_THEME); if(th) applyTheme(th); }catch(e){}
+
+    const m = getModel(activeModelId);
+    modelBadgeName.textContent = m.name;
+    footerModelName.textContent = m.name;
+    apiKeyInput.value = API_KEY;
+    promptTextarea.value = SYSTEM_PROMPT;
+    charCount.textContent = SYSTEM_PROMPT.length;
+    buildModelMenu(); buildSettingsModelList();
+    refreshKeyStatus();
+  })();
+</script>
+</body>
+</html>
