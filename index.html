@@ -14,7 +14,7 @@
       --input-bg: rgba(255,255,255,0.9); --header-bg: rgba(255,255,255,0.85);
       --settings-bg: #f5f5f7; --settings-card: #ebebed; --scanline-color: rgba(0,0,0,0.003);
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.05); --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
-      --radius: 16px;
+      --radius: 16px; --sidebar-w: 280px;
     }
     [data-theme="violet"] { --bg:#0e0b14; --surface:#16122a; --surface2:#1c1736; --border:rgba(160,120,255,0.12); --accent:#a78bfa; --accent-rgb:167,139,250; --accent2:#f472b6; --text:#ede9f6; --muted:#8b7fae; --user-bubble:#1a1530; --ai-bubble:#130e24; --glow:rgba(167,139,250,0.10); --input-bg:rgba(0,0,0,0.15); --header-bg:rgba(14,11,20,0.7); --settings-bg:#16122a; --settings-card:#1c1736; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.4); }
     [data-theme="cyborg"] { --bg:#050a0e; --surface:#0a1628; --surface2:#0f1f38; --border:rgba(0,200,255,0.12); --accent:#00c8ff; --accent-rgb:0,200,255; --accent2:#ff4d6d; --text:#e0f4ff; --muted:#5a7a90; --user-bubble:#0a1e30; --ai-bubble:#050e18; --glow:rgba(0,200,255,0.09); --input-bg:rgba(0,0,0,0.15); --header-bg:rgba(5,10,14,0.7); --settings-bg:#0a1628; --settings-card:#0f1f38; --scanline-color:rgba(255,255,255,0.008); --shadow-md:0 8px 30px rgba(0,0,0,0.5); }
@@ -31,7 +31,51 @@
     @keyframes drift1 { from{transform:translate(0,0) scale(1);} to{transform:translate(60px,-60px) scale(1.15);} }
     @keyframes drift2 { from{transform:translate(0,0) scale(1);} to{transform:translate(-40px,50px) scale(1.1);} }
 
-    .app { position:relative; z-index:1; display:grid; grid-template-rows:auto 1fr auto; height:100vh; width:100%; }
+    /* ====== Layout shifts when sidebar open ====== */
+    .app { position:relative; z-index:1; display:grid; grid-template-rows:auto 1fr auto; height:100vh; width:100%; transition:margin-left 0.4s cubic-bezier(0.4,0,0.2,1); }
+    body.sidebar-open .app { margin-left:var(--sidebar-w); }
+
+    /* ====== SIDEBAR ====== */
+    .sidebar {
+      position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w); z-index:30;
+      background:var(--settings-bg); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; transform:translateX(-100%);
+      transition:transform 0.4s cubic-bezier(0.4,0,0.2,1), background 0.5s, border-color 0.5s;
+      backdrop-filter:blur(20px);
+    }
+    body.sidebar-open .sidebar { transform:translateX(0); }
+    .sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 12px; border-bottom:1px solid var(--border); transition:border-color 0.5s; }
+    .sidebar-title { font-family:'Bebas Neue',sans-serif; font-size:1.15rem; letter-spacing:0.08em; color:var(--text); display:flex; align-items:center; gap:8px; transition:color 0.5s; }
+    .sidebar-title svg { color:var(--accent); }
+    .sidebar-collapse { width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:color 0.3s,background 0.3s; }
+    .sidebar-collapse:hover { color:var(--accent2); background:rgba(244,114,182,0.1); }
+    .new-chat-btn { margin:12px 14px 6px; padding:11px 14px; border-radius:11px; border:1px solid rgba(var(--accent-rgb),0.3); background:rgba(var(--accent-rgb),0.1); color:var(--accent); cursor:pointer; font-family:'Outfit',sans-serif; font-size:0.86rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.25s,transform 0.2s,box-shadow 0.25s; }
+    .new-chat-btn:hover { background:rgba(var(--accent-rgb),0.18); transform:translateY(-2px); box-shadow:0 6px 18px rgba(var(--accent-rgb),0.22); }
+    .new-chat-btn:active { transform:translateY(0); }
+    .history-scroll { flex:1; overflow-y:auto; padding:8px 10px 14px; scroll-behavior:smooth; }
+    .history-scroll::-webkit-scrollbar { width:6px; }
+    .history-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:6px; }
+    .history-label { font-size:0.6rem; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:var(--muted); padding:8px 8px 6px; transition:color 0.5s; }
+    .history-item { position:relative; display:flex; align-items:center; gap:9px; padding:10px 30px 10px 12px; border-radius:10px; cursor:pointer; transition:background 0.2s; margin-bottom:2px; animation:histIn 0.35s ease both; }
+    @keyframes histIn { from{opacity:0;transform:translateX(-10px);} to{opacity:1;transform:translateX(0);} }
+    .history-item:hover { background:rgba(var(--accent-rgb),0.1); }
+    .history-item.active { background:rgba(var(--accent-rgb),0.16); }
+    .history-item .hist-icon { color:var(--muted); flex-shrink:0; transition:color 0.3s; }
+    .history-item.active .hist-icon { color:var(--accent); }
+    .history-item .hist-text { flex:1; min-width:0; }
+    .history-item .hist-title { font-size:0.84rem; color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color 0.5s; }
+    .history-item .hist-time { font-size:0.64rem; color:var(--muted); margin-top:2px; transition:color 0.5s; }
+    .hist-delete { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:22px; height:22px; border-radius:6px; border:none; background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s,color 0.2s,background 0.2s; }
+    .history-item:hover .hist-delete { opacity:1; }
+    .hist-delete:hover { color:var(--accent2); background:rgba(244,114,182,0.12); }
+    .history-empty { text-align:center; color:var(--muted); font-size:0.8rem; padding:40px 18px; line-height:1.6; }
+    /* mobile overlay backdrop */
+    .sidebar-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:25; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+    body.sidebar-open .sidebar-backdrop.mobile-on { opacity:1; pointer-events:all; }
+
+    /* sidebar open toggle in header */
+    .sidebar-open-btn { width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:color 0.3s,background 0.3s,transform 0.2s; }
+    .sidebar-open-btn:hover { color:var(--accent); background:rgba(var(--accent-rgb),0.1); transform:scale(1.06); }
 
     header {
       display:flex; align-items:center; justify-content:space-between;
@@ -44,6 +88,7 @@
     @keyframes slideDown { from{opacity:0;transform:translateY(-20px);} to{opacity:1;transform:translateY(0);} }
 
     .wordmark { display:flex; align-items:center; gap:11px; }
+    .header-left { display:flex; align-items:center; gap:12px; }
     .wordmark-icon { width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.3),rgba(var(--accent-rgb),0.1)); border:1px solid rgba(var(--accent-rgb),0.3); display:flex; align-items:center; justify-content:center; animation:containerIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s both, containerPulse 4s ease-in-out infinite 1s; transition:background 0.5s,border-color 0.5s,transform 0.3s; position:relative; overflow:hidden; cursor:pointer; }
     .wordmark-icon::before { content:''; position:absolute; inset:-2px; background:conic-gradient(from 0deg,transparent 0deg,rgba(var(--accent-rgb),0.6) 60deg,transparent 120deg,transparent 240deg,rgba(var(--accent-rgb),0.4) 300deg,transparent 360deg); animation:conicSpin 4s linear infinite; opacity:0.7; z-index:0; }
     .wordmark-icon::after { content:''; position:absolute; inset:2px; border-radius:10px; background:linear-gradient(135deg,rgba(var(--accent-rgb),0.3),rgba(var(--accent-rgb),0.1)); z-index:1; }
@@ -183,7 +228,7 @@
     .theme-tile[data-t="white"]{background:rgba(200,200,210,0.15);border-color:rgba(180,180,200,0.25);}
     .theme-tile[data-t="reset"]{background:rgba(120,120,140,0.08);border-color:rgba(120,120,140,0.15);}
 
-    #messages { overflow-y:auto; padding:28px 0 16px; display:flex; flex-direction:column; gap:20px; }
+    #messages { overflow-y:auto; padding:28px 0 16px; display:flex; flex-direction:column; gap:20px; scroll-behavior:smooth; }
     #messages::-webkit-scrollbar { width:5px; }
     #messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
     .messages-inner { max-width:860px; margin:0 auto; width:100%; padding:0 24px; display:flex; flex-direction:column; gap:22px; }
@@ -241,6 +286,15 @@
     .msg-meta .meta-provider { font-size:0.52rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:1px 5px; border-radius:4px; }
     .msg-meta .meta-provider.gemini{background:rgba(var(--accent-rgb),0.15);color:var(--accent);}
     .msg-meta .meta-provider.groq{background:rgba(244,99,30,0.15);color:#ff7a3d;}
+
+    /* ====== Copy button at bottom of AI message ====== */
+    .msg-actions { display:flex; align-items:center; gap:6px; padding:0 4px; }
+    .copy-msg-btn { display:inline-flex; align-items:center; gap:6px; font-size:0.66rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); background:var(--surface2); border:1px solid var(--border); padding:5px 11px; border-radius:8px; cursor:pointer; transition:color 0.2s,background 0.2s,border-color 0.2s,transform 0.15s; }
+    .copy-msg-btn:hover { color:var(--accent); background:rgba(var(--accent-rgb),0.1); border-color:rgba(var(--accent-rgb),0.3); transform:translateY(-1px); }
+    .copy-msg-btn:active { transform:translateY(0); }
+    .copy-msg-btn.copied { color:var(--accent); border-color:rgba(var(--accent-rgb),0.4); background:rgba(var(--accent-rgb),0.12); }
+    .copy-msg-btn svg { width:13px; height:13px; }
+
     .image-attachment{border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:300px;transition:border-color 0.5s;}
     .image-attachment img{width:100%;height:auto;display:block;border-radius:8px;}
     .msg-row.user .image-attachment{border-color:rgba(var(--accent-rgb),0.25);}
@@ -283,7 +337,7 @@
     .clear-btn{font-size:0.67rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color 0.2s;}
     .clear-btn:hover{color:var(--accent2);}
     #file-input{display:none;}
-    @media(max-width:600px){ .model-option-desc{display:none;} .palette-switcher{display:none;} .wordmark-sub{display:none;} .model-menu{min-width:280px;} }
+    @media(max-width:600px){ .model-option-desc{display:none;} .palette-switcher{display:none;} .wordmark-sub{display:none;} .model-menu{min-width:280px;} body.sidebar-open .app{margin-left:0;} }
   </style>
 </head>
 <body>
@@ -304,6 +358,28 @@
 
 <div class="glow-orb orb1"></div>
 <div class="glow-orb orb2"></div>
+
+<!-- ====== Collapsible History Sidebar ====== -->
+<aside class="sidebar" id="sidebar" aria-label="Chat history">
+  <div class="sidebar-header">
+    <span class="sidebar-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      History
+    </span>
+    <button class="sidebar-collapse" id="sidebarCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+  </div>
+  <button class="new-chat-btn" id="newChatBtn">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    New Chat
+  </button>
+  <nav class="history-scroll" id="historyScroll">
+    <div class="history-label">Recent</div>
+    <div id="historyList"></div>
+  </nav>
+</aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <div class="app">
   <div class="settings-panel" id="settingsPanel">
@@ -401,9 +477,10 @@
 
       <div class="settings-section">
         <div class="settings-label">⚠ Danger Zone</div>
-        <div class="settings-desc">Permanently clear your current conversation history.</div>
+        <div class="settings-desc">Permanently clear your current conversation, or wipe all saved history.</div>
         <div class="settings-btn-row">
-          <button class="btn-reset-prompt" id="clearFromSettings" style="flex:1;">Clear Chat History</button>
+          <button class="btn-reset-prompt" id="clearFromSettings" style="flex:1;">Clear Current Chat</button>
+          <button class="btn-reset-prompt" id="wipeHistoryBtn" style="flex:1;">Delete All History</button>
         </div>
       </div>
 
@@ -413,15 +490,20 @@
 
   <header>
     <div class="header-inner">
-      <div class="wordmark">
-        <div class="wordmark-icon">
-          <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="wordmark-main">TTM AI</div>
-          <div class="wordmark-sub">Gemini · Groq</div>
+      <div class="header-left">
+        <button class="sidebar-open-btn" id="sidebarOpenBtn" title="Open history" aria-label="Open history">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="wordmark">
+          <div class="wordmark-icon">
+            <svg class="gemini-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="wordmark-main">TTM AI</div>
+            <div class="wordmark-sub">Gemini · Groq</div>
+          </div>
         </div>
       </div>
       <div class="header-right">
@@ -505,10 +587,6 @@
 <script>
   /* ============================================================
      MODEL DEFINITIONS — two providers
-     provider: "gemini" -> Google Generative Language REST API
-               "groq"   -> Groq OpenAI-compatible chat/completions
-     vision:   true if the model can see images
-     desc:     short "what it's good at" blurb shown in the menu
      ============================================================ */
   const MODELS = [
     /* ---- Google Gemini ---- */
@@ -531,13 +609,14 @@
 
   /* ---------- System prompt ---------- */
   const DEFAULT_PROMPT =
-`You are TTM AI, a warm, brilliant, and meticulous assistant built to help students and curious people learn, create, and solve problems. You were made by TM. Your goal is to be genuinely useful: accurate, clear, and a pleasure to read.
+`You are Gemini AI made by TTM, a warm, brilliant, and meticulous assistant built to help students and curious people learn, create, and solve problems. You were made by TM. Your goal is to be genuinely useful: accurate, clear, and a pleasure to read.
 
 ## CORE BEHAVIOUR
 - Be accurate first. If you are unsure or something cannot be known, say so plainly instead of inventing facts.
 - Match the depth of your answer to the question. Give short, direct replies to simple questions; take your time and reason step-by-step on complex or multi-part problems.
 - Always actually answer the question. Don't dodge, don't over-hedge, and don't end with unnecessary disclaimers.
 - Be encouraging and respectful. Assume good intent. Never be condescending.
+- Write only in paragraph format unless specifically requested by the user to use other formats like tables. 
 - When a request is ambiguous, make the most reasonable assumption, state it briefly, and proceed — only ask a clarifying question if you truly cannot continue without it.
 
 ## FORMATTING (VERY IMPORTANT)
@@ -568,11 +647,17 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   let activeModelId = MODELS[0].id;
   let KEYS = { gemini:"", groq:"" };
 
+  /* ---------- Conversation/history state ---------- */
+  let conversations = [];      // [{id, title, messages:[{role,text,images,model}], updatedAt}]
+  let currentConvId = null;    // id of the conversation being viewed
+
   const LS_GEMINI = "ttm_gemini_key";
   const LS_GROQ   = "ttm_groq_key";
   const LS_PROMPT = "ttm_system_prompt";
   const LS_MODEL  = "ttm_active_model";
   const LS_THEME  = "ttm_theme";
+  const LS_CONVS  = "ttm_conversations";
+  const LS_SIDEBAR= "ttm_sidebar_open";
 
   /* ---------- DOM ---------- */
   const messagesEl = document.getElementById('messages');
@@ -597,20 +682,172 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   const keyToast = document.getElementById('keyToast');
   let toastTimer, keyToastTimer;
 
+  /* sidebar DOM */
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  const sidebarOpenBtn = document.getElementById('sidebarOpenBtn');
+  const sidebarCollapse = document.getElementById('sidebarCollapse');
+  const newChatBtn = document.getElementById('newChatBtn');
+  const historyList = document.getElementById('historyList');
+  const historyScroll = document.getElementById('historyScroll');
+
   function hasKey(provider){ return !!KEYS[provider]; }
   function modelUnlocked(m){ return hasKey(m.provider); }
 
+  /* ============================================================
+     SIDEBAR + HISTORY
+     ============================================================ */
+  function isMobile(){ return window.matchMedia('(max-width:600px)').matches; }
+  function openSidebar(){
+    document.body.classList.add('sidebar-open');
+    sidebarBackdrop.classList.toggle('mobile-on', isMobile());
+    try{ localStorage.setItem(LS_SIDEBAR, '1'); }catch(e){}
+    autoScrollHistory();
+  }
+  function closeSidebar(){
+    document.body.classList.remove('sidebar-open');
+    sidebarBackdrop.classList.remove('mobile-on');
+    try{ localStorage.setItem(LS_SIDEBAR, '0'); }catch(e){}
+  }
+  function toggleSidebar(){ document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar(); }
+  sidebarOpenBtn.addEventListener('click', toggleSidebar);
+  sidebarCollapse.addEventListener('click', closeSidebar);
+  sidebarBackdrop.addEventListener('click', closeSidebar);
+
+  function saveConversations(){ try{ localStorage.setItem(LS_CONVS, JSON.stringify(conversations)); }catch(e){} }
+  function loadConversations(){
+    try{ const raw = localStorage.getItem(LS_CONVS); if(raw) conversations = JSON.parse(raw) || []; }catch(e){ conversations = []; }
+  }
+  function relTime(ts){
+    const d = Date.now() - ts, m = 60000, h = 3600000, day = 86400000;
+    if(d < m) return 'just now';
+    if(d < h) return Math.floor(d/m) + 'm ago';
+    if(d < day) return Math.floor(d/h) + 'h ago';
+    if(d < day*7) return Math.floor(d/day) + 'd ago';
+    return new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+  }
+  function makeTitle(text){
+    const t = (text||'').trim().replace(/\s+/g,' ');
+    if(!t) return 'New conversation';
+    return t.length > 42 ? t.slice(0,42)+'…' : t;
+  }
+
+  /* Render the history list, newest first; auto-scroll to top (newest) */
+  function renderHistory(){
+    const sorted = [...conversations].sort((a,b)=> b.updatedAt - a.updatedAt);
+    if(sorted.length === 0){
+      historyList.innerHTML = `<div class="history-empty">No conversations yet.<br>Start chatting and your history will appear here.</div>`;
+      return;
+    }
+    historyList.innerHTML = sorted.map(c=>`
+      <div class="history-item ${c.id===currentConvId?'active':''}" data-id="${c.id}" title="${escapeAttr(c.title)}">
+        <svg class="hist-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="hist-text">
+          <div class="hist-title">${escapeHtml(c.title)}</div>
+          <div class="hist-time">${relTime(c.updatedAt)}</div>
+        </div>
+        <button class="hist-delete" data-del="${c.id}" title="Delete conversation" aria-label="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>`).join('');
+    historyList.querySelectorAll('.history-item').forEach(item=>{
+      item.addEventListener('click', e=>{
+        if(e.target.closest('[data-del]')) return;
+        loadConversation(item.dataset.id);
+      });
+    });
+    historyList.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', e=>{ e.stopPropagation(); deleteConversation(btn.dataset.del); });
+    });
+  }
+  function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+  /* Auto-scroll the history list to the top so the newest is visible */
+  function autoScrollHistory(){ historyScroll.scrollTo({ top:0, behavior:'smooth' }); }
+
+  function ensureConversation(firstUserText){
+    if(currentConvId && conversations.find(c=>c.id===currentConvId)) return currentConvId;
+    const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    conversations.push({ id, title: makeTitle(firstUserText), messages: [], updatedAt: Date.now() });
+    currentConvId = id;
+    return id;
+  }
+  function persistCurrentConversation(){
+    if(!currentConvId) return;
+    const conv = conversations.find(c=>c.id===currentConvId);
+    if(!conv) return;
+    // store a lightweight copy of history (with model id so meta survives reloads)
+    conv.messages = history.map(h=>({
+      role: h.role,
+      text: h.text || '',
+      images: (h.images||[]).map(im=> typeof im==='string' ? im : im.base64),
+      modelId: h.modelId || null
+    }));
+    if((!conv.title || conv.title==='New conversation') && history[0]) conv.title = makeTitle(history[0].text);
+    conv.updatedAt = Date.now();
+    saveConversations();
+    renderHistory();
+    autoScrollHistory();
+  }
+  function deleteConversation(id){
+    conversations = conversations.filter(c=>c.id!==id);
+    saveConversations();
+    if(id===currentConvId){ startNewChat(false); }
+    renderHistory();
+  }
+  function wipeAllHistory(){
+    conversations = []; saveConversations();
+    startNewChat(false); renderHistory();
+  }
+
+  /* Load a stored conversation into the chat view */
+  function loadConversation(id){
+    const conv = conversations.find(c=>c.id===id);
+    if(!conv) return;
+    currentConvId = id;
+    history = conv.messages.map(m=>({
+      role: m.role,
+      text: m.text || '',
+      images: (m.images||[]).map(b=> ({ base64:b, type: (b.match(/^data:(image\/[a-z+]+);/)||[])[1] || 'image/png', name:'image' })),
+      modelId: m.modelId || null
+    }));
+    rebuildMessageView();
+    if(isMobile()) closeSidebar();
+    renderHistory();
+  }
+
+  /* Rebuild the visible chat from the in-memory `history` */
+  function rebuildMessageView(){
+    messagesInner.innerHTML = '';
+    if(history.length === 0){ showWelcome(); return; }
+    for(const turn of history){
+      const role = turn.role === 'model' ? 'ai' : 'user';
+      const imgs = (turn.images||[]).map(im=> typeof im==='string'?im:im.base64);
+      const model = turn.modelId ? getModel(turn.modelId) : null;
+      appendRow(role, turn.text, imgs, model, /*skipHistory*/true);
+    }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function startNewChat(focus){
+    history = []; attachedImages = []; currentConvId = null;
+    renderImagePreviews();
+    showWelcome();
+    renderHistory();
+    if(focus !== false) msgInput.focus();
+    if(isMobile()) closeSidebar();
+  }
+  newChatBtn.addEventListener('click', ()=> startNewChat(true));
+
   /* ---------- API key handling ---------- */
   function refreshKeyStatus(){
-    // Gemini
     const gs = document.getElementById('geminiKeyStatus'), gt = document.getElementById('geminiKeyStatusText');
     if(KEYS.gemini){ gs.className='key-status ok'; gt.textContent='Saved ('+KEYS.gemini.slice(0,6)+'…'+KEYS.gemini.slice(-4)+')'; }
     else { gs.className='key-status none'; gt.textContent='No Gemini key saved.'; }
-    // Groq
     const qs = document.getElementById('groqKeyStatus'), qt = document.getElementById('groqKeyStatusText');
     if(KEYS.groq){ qs.className='key-status ok'; qt.textContent='Saved ('+KEYS.groq.slice(0,6)+'…'+KEYS.groq.slice(-4)+')'; }
     else { qs.className='key-status none'; qt.textContent='No Groq key saved.'; }
-    // header pulse if no key at all
     settingsToggle.classList.toggle('needs-key', !KEYS.gemini && !KEYS.groq);
     buildModelMenu(); buildSettingsModelList();
     ensureValidActiveModel();
@@ -643,12 +880,9 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   function ensureValidActiveModel(){
     const active = getModel(activeModelId);
     if(modelUnlocked(active)) return;
-    // pick first unlocked model of any provider
     const fallback = MODELS.find(m => modelUnlocked(m));
     if(fallback) selectModel(fallback.id, true);
-    else { // none unlocked — keep showing but it'll prompt for key on send
-      updateBadge(active);
-    }
+    else updateBadge(active);
   }
 
   /* ---------- Model menu rendering ---------- */
@@ -672,9 +906,7 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     const items = MODELS.filter(m=>m.provider===provider).map(modelOptionHtml).join('');
     return `<div class="model-group-label"><span class="grp-dot ${provider}"></span>${label}</div>${items}`;
   }
-  function menuMarkup(){
-    return groupHtml('gemini','Google Gemini') + groupHtml('groq','Groq');
-  }
+  function menuMarkup(){ return groupHtml('gemini','Google Gemini') + groupHtml('groq','Groq'); }
   function wireOptions(container){
     container.querySelectorAll('.model-option').forEach(opt => opt.addEventListener('click', ()=>{
       const m = getModel(opt.dataset.model);
@@ -724,6 +956,7 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     saveToast.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(()=> saveToast.classList.remove('visible'), 3000);
   });
   document.getElementById('clearFromSettings').addEventListener('click', ()=>{ clearChat(); closeSettings(); });
+  document.getElementById('wipeHistoryBtn').addEventListener('click', ()=>{ wipeAllHistory(); closeSettings(); });
 
   /* ---------- Themes ---------- */
   const themeMap = { violet:'violet', cyborg:'cyborg', ice:'ice', rosepine:'rosepine', white:'', reset:'black' };
@@ -792,6 +1025,29 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
       setTimeout(()=> btn.innerHTML = orig, 1500);
     });
   }
+  /* ---------- Copy whole AI message ---------- */
+  function copyMessage(btn){
+    const raw = btn.getAttribute('data-raw');
+    let text = '';
+    try{ text = decodeURIComponent(raw); }catch(e){ text = raw || ''; }
+    const done = ()=>{
+      btn.classList.add('copied');
+      const label = btn.querySelector('.copy-label');
+      const prev = label ? label.textContent : '';
+      if(label) label.textContent = 'Copied!';
+      setTimeout(()=>{ btn.classList.remove('copied'); if(label) label.textContent = prev || 'Copy'; }, 1600);
+    };
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+    } else { fallbackCopy(text, done); }
+  }
+  function fallbackCopy(text, cb){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); cb && cb(); }catch(e){}
+    document.body.removeChild(ta);
+  }
 
   /* ---------- Compose ---------- */
   function autoResize(){ msgInput.style.height='auto'; msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px'; }
@@ -810,8 +1066,28 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   function removeImage(idx){ attachedImages.splice(idx,1); renderImagePreviews(); }
   function useChip(el){ msgInput.value=el.textContent; autoResize(); sendMessage(); }
   function removeWelcome(){ document.getElementById('welcome')?.remove(); }
+  function showWelcome(){
+    messagesInner.innerHTML = `
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">
+          <span class="sparkle-particle p1"></span><span class="sparkle-particle p2"></span>
+          <span class="sparkle-particle p3"></span><span class="sparkle-particle p4"></span>
+          <svg class="gemini-logo-svg-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z" fill="url(#geminiGradWelcome)"/>
+          </svg>
+        </div>
+        <h2>What Can I Help With?</h2>
+        <p>Made by TM — chat with Gemini &amp; Groq models, paste images too. Add an API key in ⚙ Settings to get started.</p>
+        <div class="suggestion-chips">
+          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
+          <div class="chip" onclick="useChip(this)">Write me a poem</div>
+          <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
+          <div class="chip" onclick="useChip(this)">Debug my code</div>
+        </div>
+      </div>`;
+  }
 
-  function appendRow(role, text, images=[], model=null){
+  function appendRow(role, text, images=[], model=null, skipHistory){
     removeWelcome();
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
@@ -822,9 +1098,20 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     if(role==='ai' && model){
       metaHtml = `<div class="msg-meta"><span class="meta-provider ${model.provider}">${PROVIDER_LABEL[model.provider]}</span><span class="meta-model">${model.name}</span></div>`;
     }
-    row.innerHTML = `<div class="msg-label">${role==='user'?'you':'ttm ai'}</div><div class="msg-content">${imagesHtml}${bubbleHtml}${metaHtml}</div>`;
+    /* Copy button at the bottom of every AI message that has text */
+    let actionsHtml = '';
+    if(role==='ai' && text){
+      const enc = encodeURIComponent(text);
+      actionsHtml = `<div class="msg-actions">
+        <button class="copy-msg-btn" data-raw="${enc}" onclick="copyMessage(this)" title="Copy response">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>`;
+    }
+    row.innerHTML = `<div class="msg-label">${role==='user'?'you':'ttm ai'}</div><div class="msg-content">${imagesHtml}${bubbleHtml}${metaHtml}${actionsHtml}</div>`;
     messagesInner.appendChild(row);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if(!skipHistory) messagesEl.scrollTop = messagesEl.scrollHeight;
     return row;
   }
   function appendTyping(){
@@ -867,21 +1154,27 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     msgInput.value = ''; msgInput.style.height='auto';
     const imageDataUrls = attachedImages.map(i=>i.base64);
     const imagesForSend = [...attachedImages];
+
+    ensureConversation(text || '(image)');
+
     appendRow('user', text, imageDataUrls);
     history.push({ role:"user", text, images: imagesForSend });
     attachedImages = []; renderImagePreviews();
+    persistCurrentConversation();
     appendTyping();
 
     try{
       const reply = model.provider === 'gemini'
         ? await callGemini(model)
         : await callGroq(model);
-      history.push({ role:"model", text: reply, images: [] });
+      history.push({ role:"model", text: reply, images: [], modelId: model.id });
       removeTyping(); appendRow('ai', reply, [], model);
+      persistCurrentConversation();
     }catch(err){
       console.error(err);
       removeTyping();
       if(history[history.length-1]?.role === 'user') history.pop();
+      persistCurrentConversation();
       const msg = err.message || "Something went wrong.";
       const keyIssue = /api key|api_key|permission|invalid|unauthor|401|403|not found|400|model/i.test(msg);
       appendError(msg, keyIssue);
@@ -894,7 +1187,11 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   async function callGemini(model){
     const contents = history.map(turn=>{
       const parts = [];
-      for(let img of (turn.images||[])) parts.push({ inlineData:{ mimeType:img.type, data:img.base64.split(',')[1] } });
+      for(let img of (turn.images||[])){
+        const base64 = typeof img==='string' ? img : img.base64;
+        const type = typeof img==='string' ? ((base64.match(/^data:(image\/[a-z+]+);/)||[])[1]||'image/png') : img.type;
+        parts.push({ inlineData:{ mimeType:type, data:base64.split(',')[1] } });
+      }
       if(turn.text) parts.push({ text: turn.text });
       return { role: turn.role==='model'?'model':'user', parts };
     });
@@ -918,10 +1215,11 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     const messages = [{ role:"system", content: SYSTEM_PROMPT }];
     for(let turn of history){
       const role = turn.role==='model' ? 'assistant' : 'user';
-      if(model.vision && turn.images && turn.images.length){
+      const imgs = turn.images||[];
+      if(model.vision && imgs.length){
         const content = [];
         if(turn.text) content.push({ type:"text", text: turn.text });
-        for(let img of turn.images) content.push({ type:"image_url", image_url:{ url: img.base64 } });
+        for(let img of imgs){ const url = typeof img==='string'?img:img.base64; content.push({ type:"image_url", image_url:{ url } }); }
         messages.push({ role, content });
       } else {
         messages.push({ role, content: turn.text || "" });
@@ -938,25 +1236,10 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
   }
 
   function clearChat(){
-    history = []; attachedImages = []; renderImagePreviews();
-    messagesInner.innerHTML = `
-      <div class="welcome" id="welcome">
-        <div class="welcome-icon">
-          <span class="sparkle-particle p1"></span><span class="sparkle-particle p2"></span>
-          <span class="sparkle-particle p3"></span><span class="sparkle-particle p4"></span>
-          <svg class="gemini-logo-svg-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0 C12 6 13 11 24 12 C13 13 12 18 12 24 C12 18 11 13 0 12 C11 11 12 6 12 0 Z" fill="url(#geminiGradWelcome)"/>
-          </svg>
-        </div>
-        <h2>What Can I Help With?</h2>
-        <p>Made by TM — chat with Gemini &amp; Groq models, paste images too. Add an API key in ⚙ Settings to get started.</p>
-        <div class="suggestion-chips">
-          <div class="chip" onclick="useChip(this)">Explain quantum computing</div>
-          <div class="chip" onclick="useChip(this)">Write me a poem</div>
-          <div class="chip" onclick="useChip(this)">Solve 5t-1=4t+67</div>
-          <div class="chip" onclick="useChip(this)">Debug my code</div>
-        </div>
-      </div>`;
+    // Clears the *current* on-screen conversation but keeps saved history list.
+    history = []; attachedImages = []; currentConvId = null; renderImagePreviews();
+    showWelcome();
+    renderHistory();
   }
 
   /* ---------- Init ---------- */
@@ -967,6 +1250,9 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     try{ const sm = localStorage.getItem(LS_MODEL); if(sm && getModel(sm).id===sm) activeModelId = sm; }catch(e){}
     try{ const th = localStorage.getItem(LS_THEME); if(th) applyTheme(th); }catch(e){}
 
+    loadConversations();
+    renderHistory();
+
     updateBadge(getModel(activeModelId));
     document.getElementById('geminiKeyInput').value = KEYS.gemini;
     document.getElementById('groqKeyInput').value = KEYS.groq;
@@ -974,6 +1260,12 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
     charCount.textContent = SYSTEM_PROMPT.length;
     buildModelMenu(); buildSettingsModelList();
     refreshKeyStatus();
+
+    /* restore sidebar state — open by default on desktop */
+    let wantOpen = true;
+    try{ const s = localStorage.getItem(LS_SIDEBAR); if(s!==null) wantOpen = (s==='1'); }catch(e){}
+    if(isMobile()) wantOpen = false;
+    if(wantOpen) openSidebar(); else closeSidebar();
   })();
 </script>
 </body>
