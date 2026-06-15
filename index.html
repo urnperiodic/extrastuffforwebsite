@@ -575,7 +575,7 @@
       </div>
       <div class="input-footer">
         <span>Enter to send · Shift+Enter for new line · Paste images</span>
-        <div class="footer-model">Model: <b id="footerModelName">Gemini 2.5 Flash</b></div>
+        <div class="footer-model">Model: <b id="footerModelName">Gemini 3.5 Flash</b></div>
         <button class="clear-btn" onclick="clearChat()">clear chat</button>
       </div>
     </div>
@@ -648,7 +648,7 @@ Above all: be clear, be correct, format everything nicely, and finish the job.`;
 
   let SYSTEM_PROMPT = DEFAULT_PROMPT;
   let history = [], isLoading = false, attachedImages = [];
-  let activeModelId = MODELS[0].id;
+  let activeModelId = "gemini-3.5-flash";
   let KEYS = { gemini:"", groq:"" };
 
   /* ---------- Conversation/history state ---------- */
