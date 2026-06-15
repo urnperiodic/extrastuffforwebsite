@@ -590,10 +590,14 @@
      ============================================================ */
   const MODELS = [
     /* ---- Google Gemini ---- */
-    { id:"gemini-2.5-flash",      provider:"gemini", name:"Gemini 2.5 Flash",      api:"gemini-2.5-flash",        vision:true,  desc:"All-rounder. Fast, smart, sees images — great default for almost anything." },
-    { id:"gemini-2.5-flash-lite", provider:"gemini", name:"Gemini 2.5 Flash Lite", api:"gemini-2.5-flash-lite",   vision:true,  desc:"Lightest & cheapest Gemini. Snappy replies for simple Q&A and quick tasks." },
-    { id:"gemini-2.5-pro",        provider:"gemini", name:"Gemini 2.5 Pro",        api:"gemini-2.5-pro",          vision:true,  desc:"Most capable Gemini. Deep reasoning, long context, hard math & big documents." },
-    { id:"gemini-3-flash",        provider:"gemini", name:"Gemini 3 Flash",        api:"gemini-flash-latest",     vision:true,  desc:"Newest fast Gemini. Strong reasoning with low latency for everyday chat." },
+      /* ---- Google Gemini ---- */
+  { id: "gemini-2.5-flash",      provider: "gemini", name: "Gemini 2.5 Flash",      api: "gemini-2.5-flash",      vision: true,  desc: "All-rounder. Fast, smart, sees images — great default for almost anything." },
+  { id: "gemini-2.5-flash-lite", provider: "gemini", name: "Gemini 2.5 Flash Lite", api: "gemini-2.5-flash-lite", vision: true,  desc: "Lightest & cheapest Gemini. Snappy replies for simple Q&A and quick tasks." },
+  { id: "gemini-3-flash",        provider: "gemini", name: "Gemini 3 Flash",        api: "gemini-3-flash",        vision: true,  desc: "Frontier-class speed. Low latency, strong reasoning, and advanced multimodal processing." },
+  { id: "gemini-3.1-flash-lite", provider: "gemini", name: "Gemini 3.1 Flash Lite", api: "gemini-3.1-flash-lite", vision: true,  desc: "Ultrafast frontier-class model optimized for massive scale and high cost efficiency." },
+  { id: "gemini-3.5-flash",      provider: "gemini", name: "Gemini 3.5 Flash",      api: "gemini-3.5-flash",      vision: true,  desc: "Next-gen intelligence. Deeply optimized for complex multi-step agentic workflows." },
+  { id: "gemini-latest-flash",   provider: "gemini", name: "Gemini latest flash",   api: "gemini-flash-latest",   vision: true,  desc: "Alias pointing directly to the most current stable Flash version available." },
+
 
     /* ---- Groq ---- */
     { id:"llama-3.3-70b",  provider:"groq", name:"Llama 3.3 70B",  api:"llama-3.3-70b-versatile",        vision:false, desc:"Smartest, similar to GPT-4o. Best for complex reasoning, writing & general work." },
